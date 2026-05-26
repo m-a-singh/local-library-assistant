@@ -84,7 +84,7 @@ KNOWN_VARIANTS = {
 REWRITE_NOTES_MAX = 4
 
 
-@dataclass(slots=True)
+@dataclass
 class QueryRewriteResult:
     original_query: str
     rewrites: list[str] = field(default_factory=list)
@@ -92,7 +92,7 @@ class QueryRewriteResult:
     notes: list[str] = field(default_factory=list)
 
 
-@dataclass(slots=True)
+@dataclass
 class MergedRetrievalResult:
     original_query: str
     rewrites: list[str] = field(default_factory=list)
@@ -101,13 +101,13 @@ class MergedRetrievalResult:
     retrieval_summary: dict[str, Any] = field(default_factory=dict)
 
 
-@dataclass(slots=True)
+@dataclass
 class QueryRewriteRetryPolicy:
     max_attempts: int = 2
     backoff_seconds: float = 0.5
 
 
-@dataclass(slots=True)
+@dataclass
 class QueryRewriteConfig:
     ollama_base_url: str = "http://localhost:4000"
     litellm_api_key: str = field(default_factory=lambda: os.getenv("LITELLM_PROXY_API_KEY", "local-dev-key"))
@@ -122,7 +122,7 @@ class QueryRewriteConfig:
     max_rewrites: int = 6
 
 
-@dataclass(slots=True)
+@dataclass
 class _MergeAccumulator:
     unit: EvidenceUnit
     max_lexical_score: float

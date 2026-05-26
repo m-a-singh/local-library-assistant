@@ -25,7 +25,7 @@ EXTRACTOR_VERSION = "0.2.0"
 DOCX_NS = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class SourceTypeSpec:
     source_kind: str
     mime_type: str

@@ -20,14 +20,14 @@ NORMALIZER_NAME = "basic_text_normalizer"
 NORMALIZER_VERSION = "0.1.0"
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class TextArtifacts:
     text: str
     span_map: list[SpanMapEntry]
     line_index: list[LineIndexEntry]
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class SegmentationLine:
     """One normalized line plus its source mapping.
 
@@ -62,7 +62,7 @@ class SegmentationLine:
         return not self.stripped_line.strip()
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class SegmentationInput:
     """Explicit handoff contract from normalization to structural segmentation.
 

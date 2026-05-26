@@ -24,7 +24,7 @@ from .segment import build_structural_regions
 DEFAULT_EVIDENCE_DB_PATH = "evidence_units.db"
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class PipelineResult:
     source_document: SourceDocument
     raw_extracted_text: ExtractedText

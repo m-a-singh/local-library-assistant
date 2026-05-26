@@ -27,7 +27,7 @@ BARE_URL_RE = re.compile(r"https?://[^\s<>()]+")
 REMOTE_PROMPT_RE = re.compile(r"^[\w.-]+@[\w.-]+[:~/$._-]*[$#]\s+(.*)$")
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class _TargetEntry:
     target_ref: ArtifactTarget
     payload_entry: dict[str, Any]

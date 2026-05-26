@@ -556,17 +556,17 @@ def _specialize_unit_type(
     command_candidate = command_strength >= 3
 
     if mermaid_block:
-        return "diagram", False, False, False, table_candidate, True, sql_strength, command_strength, opensearch_strength
+        return "diagram", False, False, False, table_candidate, True, sql_strength, command_strength, json_query_strength
     if table_candidate:
-        return "table", False, False, False, True, False, sql_strength, command_strength, opensearch_strength
+        return "table", False, False, False, True, False, sql_strength, command_strength, json_query_strength
     if json_query_candidate:
         return "json_query", False, False, True, False, False, sql_strength, command_strength, json_query_strength
     if fence_language in SHELL_FENCE_LANGUAGES and command_strength >= 2:
-        return "command", sql_candidate, True, False, False, False, sql_strength, command_strength, opensearch_strength
+        return "command", sql_candidate, True, False, False, False, sql_strength, command_strength, json_query_strength
     if sql_strength > command_strength and sql_candidate:
-        return "sql", sql_candidate, command_candidate, False, False, False, sql_strength, command_strength, opensearch_strength
+        return "sql", sql_candidate, command_candidate, False, False, False, sql_strength, command_strength, json_query_strength
     if command_candidate:
-        return "command", sql_candidate, command_candidate, False, False, False, sql_strength, command_strength, opensearch_strength
+        return "command", sql_candidate, command_candidate, False, False, False, sql_strength, command_strength, json_query_strength
     return base_unit_type, sql_candidate, command_candidate, False, False, False, sql_strength, command_strength, json_query_strength
 
 

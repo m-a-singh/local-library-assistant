@@ -25,14 +25,14 @@ LOGGER.setLevel(
 )
 
 
-@dataclass(slots=True)
+@dataclass
 class RerankedCandidate:
     unit_id: str
     rank: int
     rationale: str | None = None
 
 
-@dataclass(slots=True)
+@dataclass
 class RerankResult:
     query: str
     original_count: int
@@ -42,7 +42,7 @@ class RerankResult:
     notes: list[str] = field(default_factory=list)
 
 
-@dataclass(slots=True)
+@dataclass
 class CandidateRerankerConfig:
     api_base: str = "http://localhost:4000"
     api_key: str = field(

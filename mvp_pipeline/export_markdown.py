@@ -52,26 +52,26 @@ EXPORT_INTROS = {
 }
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class MarkdownExportFile:
     category: str
     path: Path
     item_count: int
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class MarkdownExportResult:
     dataset_dir: Path
     files: dict[str, MarkdownExportFile]
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class SkippedSourceFile:
     path: Path
     reason: str
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class BatchMarkdownExportResult:
     input_dir: Path
     dataset_dir: Path
@@ -90,7 +90,7 @@ class BatchMarkdownExportResult:
         return len(self.skipped_files)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class _ExportItem:
     source_file: str
     evidence_unit: EvidenceUnit

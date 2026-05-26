@@ -244,7 +244,7 @@ class MvpPipelineTest(unittest.TestCase):
             self.assertIn("mermaid_block", result.evidence_units[0].signals)
             self.assertNotIn("command_candidate", result.evidence_units[0].signals)
 
-    def test_opensearch_search_block_becomes_opensearch_query(self) -> None:
+    def test_json_search_block_becomes_json_query(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "search.md"
             path.write_text(
@@ -258,13 +258,13 @@ class MvpPipelineTest(unittest.TestCase):
             result = run_pipeline(path)
 
             self.assertEqual(len(result.evidence_units), 1)
-            self.assertEqual(result.evidence_units[0].unit_type, "opensearch_query")
+            self.assertEqual(result.evidence_units[0].unit_type, "json_query")
             self.assertEqual(result.evidence_units[0].confidence.value, "high")
             self.assertEqual(result.evidence_units[0].flags, [])
-            self.assertIn("opensearch_query_candidate", result.evidence_units[0].signals)
+            self.assertIn("json_query_candidate", result.evidence_units[0].signals)
             self.assertNotIn("command_candidate", result.evidence_units[0].signals)
 
-    def test_opensearch_aliases_block_becomes_opensearch_query(self) -> None:
+    def test_json_aliases_block_becomes_json_query(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "aliases.md"
             path.write_text(
@@ -278,10 +278,10 @@ class MvpPipelineTest(unittest.TestCase):
             result = run_pipeline(path)
 
             self.assertEqual(len(result.evidence_units), 1)
-            self.assertEqual(result.evidence_units[0].unit_type, "opensearch_query")
+            self.assertEqual(result.evidence_units[0].unit_type, "json_query")
             self.assertEqual(result.evidence_units[0].confidence.value, "high")
             self.assertEqual(result.evidence_units[0].flags, [])
-            self.assertIn("opensearch_query_candidate", result.evidence_units[0].signals)
+            self.assertIn("json_query_candidate", result.evidence_units[0].signals)
             self.assertNotIn("command_candidate", result.evidence_units[0].signals)
 
     def test_shell_like_paragraph_becomes_command_evidence(self) -> None:

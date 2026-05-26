@@ -81,7 +81,7 @@ class GroundedAnswerJSONError(GroundedAnswerError):
     """Raised when the answer model repeatedly fails to return valid JSON."""
 
 
-@dataclass(slots=True)
+@dataclass
 class EvidenceCitation:
     unit_id: str
     source_file: str
@@ -90,7 +90,7 @@ class EvidenceCitation:
     region_summary: str | None = None
 
 
-@dataclass(slots=True)
+@dataclass
 class GroundedAnswer:
     query: str
     answer: str
@@ -99,13 +99,13 @@ class GroundedAnswer:
     retrieval_summary: dict[str, Any] = field(default_factory=dict)
 
 
-@dataclass(slots=True)
+@dataclass
 class GroundedAnswerRetryPolicy:
     max_attempts: int = 2
     backoff_seconds: float = 0.5
 
 
-@dataclass(slots=True)
+@dataclass
 class GroundedAnswerConfig:
     ollama_base_url: str = "http://localhost:4000"
     litellm_api_key: str = field(

@@ -29,14 +29,14 @@ RegionBuilder = Callable[
 ]
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class _SectionContext:
     level: int
     region_id: str
     label: str
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class SegmentationProfile:
     profile_name: str
     source_kinds: tuple[str, ...]

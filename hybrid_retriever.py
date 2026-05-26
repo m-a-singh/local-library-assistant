@@ -41,14 +41,14 @@ LOGGER.setLevel(
 )
 
 
-@dataclass(slots=True)
+@dataclass
 class SemanticHit:
     unit_id: str
     score: float
     rank: int
 
 
-@dataclass(slots=True)
+@dataclass
 class HybridRetrievalResult:
     query: str
     lexical_hit_count: int
@@ -58,7 +58,7 @@ class HybridRetrievalResult:
     retrieval_summary: dict[str, Any] = field(default_factory=dict)
 
 
-@dataclass(slots=True)
+@dataclass
 class HybridRetrieverConfig:
     api_base: str = "http://localhost:4000"
     api_key: str = field(

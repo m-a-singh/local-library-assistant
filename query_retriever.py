@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 
-@dataclass(slots=True)
+@dataclass
 class EvidenceUnit:
     """Structured evidence unit stored and retrieved by the Step 12 layer."""
 
@@ -24,7 +24,7 @@ class EvidenceUnit:
     next_unit_id: str | None = None
 
 
-@dataclass(slots=True)
+@dataclass
 class RetrievalHit:
     """One ranked retrieval match."""
 
@@ -33,7 +33,7 @@ class RetrievalHit:
     rank: int
 
 
-@dataclass(slots=True)
+@dataclass
 class RetrievalResult:
     """Structured retrieval response with optional neighbor expansion."""
 

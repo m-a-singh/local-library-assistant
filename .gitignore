@@ -21,3 +21,4 @@ DS_Store
 examples/__pycache__
 mvp_pipeline/__pycache__
 tests/__pycache__
+evidence_units.db

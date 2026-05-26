@@ -116,7 +116,7 @@ The shaping code also includes type detection for several content patterns. Test
 - `code`
 - `command`
 - `sql`
-- `opensearch_query`
+- `json_query`
 - `table`
 - `diagram`
 - `mixed`
@@ -169,7 +169,7 @@ Grounded answers:
 
 - use retrieved `EvidenceUnit`s as the grounding context
 - call a local OpenAI-compatible LiteLLM proxy
-- currently use model `gemma4:e4b`
+- model is configurable via env vars (defaults to `llama3:8b`)
 - return:
   - an answer
   - source citations
@@ -287,8 +287,10 @@ The code currently expects:
 
 The code currently uses:
 
-- answer model: `gemma4:e4b`
-- embedding model default: `text-embedding-ada-002`
+- answer model: configurable via `LLA_ANSWER_MODEL` (defaults to `llama3:8b`)
+- rewrite model: configurable via `LLA_REWRITE_MODEL` (defaults to `llama3:8b`)
+- rerank model: configurable via `LLA_RERANK_MODEL` (defaults to `llama3:8b`)
+- embedding model default: `text-embedding-ada-002` (configurable via `STEP14_EMBED_MODEL`)
 
 Relevant environment variables used by the code:
 
@@ -633,7 +635,7 @@ These are clear from the current code:
 Run unit tests:
 
 ```bash
-PYTHONPATH=. python3 -m unittest discover -s scripts/local_assitant/tests -p "test_*.py"
+PYTHONPATH=. python3 -m unittest discover -s tests -p "test_*.py"
 ```
 
 The repository contains `unittest` test files under `tests/`, including:
