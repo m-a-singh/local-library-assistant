@@ -1,9 +1,23 @@
-# Minimal runtime dependencies for the Local Library Assistant MVP.
-# Stdlib-only for most functionality.
+# Local Library Assistant dependencies
+#
+# The core retrieval-only workflow is stdlib-only.
+# This file lists OPTIONAL dependencies for extra capabilities.
+#
+# Install everything:
+#   python3 -m pip install -r requirements.txt
+#
+# Or install selectively (examples):
+#   python3 -m pip install pypdf
+#   python3 -m pip install numpy
+#
 
-# PDF text extraction (optional; pipeline will fall back to other backends if unavailable)
+# --- Optional: PDF extraction backends (mvp_pipeline/ingest.py) ---
+# The pipeline can also use the external `pdftotext` binary if installed.
 pypdf>=4.0.0
 PyPDF2>=3.0.0
 
-# Hybrid semantic retrieval embeddings (optional; only needed when using --hybrid)
+# --- Optional: Hybrid retrieval vector math (hybrid_retriever.py) ---
+# Current implementation uses only stdlib math, but keep numpy here as a
+# common dependency if you extend semantic indexing.
+# (Safe to remove if you want a stricter stdlib-only baseline.)
 numpy>=1.24

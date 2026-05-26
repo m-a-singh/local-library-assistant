@@ -250,13 +250,21 @@ This tool is designed to run locally over your files, but you are responsible fo
 
 ### Python
 
-The core system uses only the Python standard library.
+The core retrieval-only workflow is Python standard library only. Optional features (PDF extraction, hybrid semantic retrieval, grounded answers / rewrites / reranking) may require additional dependencies and/or a local OpenAI-compatible proxy.
 
 Optional capabilities:
 - **PDF extraction** works only if you have either `pypdf`/`PyPDF2` installed or a `pdftotext` binary available.
 - **Hybrid retrieval / grounded answers** require a local OpenAI-compatible proxy (e.g. LiteLLM).
 
 The main scripts are intended to be run with `python3`.
+
+Dependencies:
+- Retrieval-only mode: stdlib-only (no `pip install` required).
+- Optional features: install optional deps via:
+
+```bash
+python3 -m pip install -r requirements.txt
+```
 
 ### Retrieval-only operation
 
