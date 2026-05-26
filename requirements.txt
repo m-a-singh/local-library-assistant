@@ -1,0 +1,9 @@
+# Minimal runtime dependencies for the Local Library Assistant MVP.
+# Stdlib-only for most functionality.
+
+# PDF text extraction (optional; pipeline will fall back to other backends if unavailable)
+pypdf>=4.0.0
+PyPDF2>=3.0.0
+
+# Hybrid semantic retrieval embeddings (optional; only needed when using --hybrid)
+numpy>=1.24

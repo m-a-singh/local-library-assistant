@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+
+# Results / artifacts
+results/
+
+# OS / IDE
+.DS_Store
+__MACOSX/
+.idea/
+*.iml
+.venv
+DS_Store
+examples/__pycache__
+mvp_pipeline/__pycache__
+tests/__pycache__
