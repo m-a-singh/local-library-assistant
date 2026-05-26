@@ -48,7 +48,9 @@ class CandidateRerankerConfig:
     api_key: str = field(
         default_factory=lambda: os.getenv("LITELLM_PROXY_API_KEY", "local-dev-key")
     )
-    model: str = "gemma4:e4b"
+    # Model id/tag for the upstream chat-completions provider (LiteLLM/Ollama/etc).
+    # Set via env var to avoid leaking internal model naming conventions.
+    model: str = field(default_factory=lambda: os.getenv("LLA_RERANK_MODEL", "llama3:8b"))
     timeout_seconds: float = 120.0
     temperature: float = 0.0
     max_tokens: int = 400

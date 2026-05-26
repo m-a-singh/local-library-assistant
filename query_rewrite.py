@@ -110,8 +110,10 @@ class QueryRewriteRetryPolicy:
 @dataclass(slots=True)
 class QueryRewriteConfig:
     ollama_base_url: str = "http://localhost:4000"
-    litellm_api_key: str = field(default_factory=lambda: os.getenv("LITELLM_PROXY_API_KEY", "sk-1234"))
-    model: str = "gemma4:e4b"
+    litellm_api_key: str = field(default_factory=lambda: os.getenv("LITELLM_PROXY_API_KEY", "local-dev-key"))
+    # Model id/tag for the upstream chat-completions provider (LiteLLM/Ollama/etc).
+    # Set via env var to avoid leaking internal model naming conventions.
+    model: str = field(default_factory=lambda: os.getenv("LLA_REWRITE_MODEL", "llama3:8b"))
     max_tokens: int = 350
     timeout_seconds: float = 60.0
     temperature: float = 0.0
