@@ -548,10 +548,14 @@ These files exist in the codebase, but they are not part of the current shipping
   Markdown export helpers used by the audit export flow.
 
 - `query_rewrite.py`
-  Query rewrite support exists in the repository, but it is not exposed by the current shipping `chat.py` CLI.
+  Experimental extension for rewrite-aware retrieval.
+  It can generate query variants (heuristic + optional LLM rewrites), run retrieval for each variant, then merge/rerank the combined hit list.
+  Not wired into `chat.py` by default; you’d integrate it by calling `retrieve_with_rewrites(...)` (or `QueryRewriteClient`) in the query path before printing results.
 
 - `candidate_reranker.py`
-  Candidate reranking support exists in the repository, but it is not exposed by the current shipping `chat.py` CLI.
+  Experimental extension for second-stage LLM reranking.
+  Given the top-N retrieved candidates, it asks a local OpenAI-compatible endpoint to return a best-first ordering of `unit_id`s.
+  Not wired into `chat.py` by default; you’d integrate it after retrieval (lexical or hybrid) and before neighbor expansion / answer synthesis.
 
 - `examples/`
   Development and inspection scripts for intermediate pipeline stages.
