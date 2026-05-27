@@ -1,5 +1,8 @@
 # Local Library Assistant
 
+[![CI](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml)
+[![lint: ruff](https://img.shields.io/badge/lint-ruff-informational)](https://github.com/astral-sh/ruff)
+
 This project builds a local evidence database from text files and provides a CLI chat interface over that database.
 
 The current shipping path is:
@@ -65,6 +68,28 @@ The project currently follows this data path:
 
 ```text
 local file -> ExtractedText -> StructuralRegion -> EvidenceUnit -> SQLite index -> retrieval -> grounded answer
+```
+
+```mermaid
+graph TD
+  A[Local files (.md/.txt/.pdf/.docx/etc)]:::accent0 --> B[Ingest + normalize\n(mvp_pipeline/ingest.py, normalize.py)]:::accent1
+  B --> C[Segmentation contract\n(SegmentationInput)]:::accent2
+  C --> D[Structural segmentation\n(mvp_pipeline/segment.py)]:::accent3
+  D --> E[StructuralRegion list]:::accent2
+  E --> F[Evidence shaping + type detection\n(mvp_pipeline/evidence.py)]:::accent4
+  F --> G[EvidenceUnit list]:::accent2
+  G --> H[SQLite EvidenceUnit index\n(query_retriever.py)]:::accent5
+
+  H --> I[Lexical retrieval\n(chat.py)]:::accent6
+  H -. optional .-> J[Hybrid retrieval\n(hybrid_retriever.py)]:::accent6
+
+  I --> K[Evidence hits + neighbors]:::accent2
+  J --> K
+
+  K -. optional .-> L[Grounded answer synthesis\n(grounded_answer_client.py)]:::accent7
+  L --> M[Answer + citations]:::accent7
+
+  K --> N[Retrieval-only output\n(hits shown to user)]:::accent6
 ```
 
 ### 1. Ingestion and normalization
@@ -648,6 +673,14 @@ Run unit tests:
 
 ```bash
 PYTHONPATH=. python3 -m unittest discover -s tests -p "test_*.py"
+```
+
+Run Ruff lint + formatting checks:
+
+```bash
+python3 -m pip install ruff
+ruff format --check .
+ruff check .
 ```
 
 The repository contains `unittest` test files under `tests/`, including:

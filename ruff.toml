@@ -1,0 +1,17 @@
+# Ruff configuration for Local Library Assistant
+
+line-length = 100
+
+target-version = "py39"
+
+[lint]
+# Keep this modest for a portfolio repo; tighten over time.
+select = [
+  "E",   # pycodestyle errors
+  "F",   # pyflakes
+  "I",   # isort
+]
+
+[format]
+quote-style = "double"
+indent-style = "space"
