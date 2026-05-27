@@ -1,6 +1,6 @@
 # Local Library Assistant
 
-[![CI](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml/badge.svg)](https://github.com/<OWNER>/<REPO>/actions/workflows/ci.yml)
+[![CI](https://github.com/m-a-singh/local-library-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/m-a-singh/local-library-assistant/actions/workflows/ci.yml)
 [![lint: ruff](https://img.shields.io/badge/lint-ruff-informational)](https://github.com/astral-sh/ruff)
 
 This project builds a local evidence database from text files and provides a CLI chat interface over that database.

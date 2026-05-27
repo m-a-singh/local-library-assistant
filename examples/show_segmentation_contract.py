@@ -36,8 +36,9 @@ def main() -> int:
     print(f"  segmentation_profile: {segmentation_profile.profile_name}")
     print(f"  normalized_mode: {normalized_extracted_text.extraction_mode}")
     print(f"  fidelity_state: {segmentation_input.fidelity_state}")
-    print(f"  has_cr: {'\\r' in segmentation_input.text}")
-    print(f"  has_bom: {segmentation_input.text.startswith(chr(0xfeff))}")
+    has_cr = "\r" in segmentation_input.text
+    print(f"  has_cr: {has_cr}")
+    print(f"  has_bom: {segmentation_input.text.startswith(chr(0xFEFF))}")
     print(f"  line_count: {len(segmentation_input.lines)}")
     print("  normalization_notes:")
     if segmentation_input.normalization_notes:

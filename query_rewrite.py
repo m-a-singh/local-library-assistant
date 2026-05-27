@@ -18,8 +18,7 @@ import urllib.request
 from dataclasses import dataclass, field
 from typing import Any
 
-from query_retriever import EvidenceUnit, EvidenceUnitIndex, RetrievalHit, RetrievalResult
-
+from query_retriever import EvidenceUnit, EvidenceUnitIndex, RetrievalHit
 
 LOGGER = logging.getLogger(__name__)
 if not LOGGER.handlers:
@@ -71,11 +70,33 @@ COMMAND_INTENT_TOKENS = {
     "startup",
     "stop",
 }
-QUERY_INTENT_TOKENS = {"query", "sql", "select", "insert", "update", "delete", "search", "dsl", "_search"}
+QUERY_INTENT_TOKENS = {
+    "query",
+    "sql",
+    "select",
+    "insert",
+    "update",
+    "delete",
+    "search",
+    "dsl",
+    "_search",
+}
 KNOWN_VARIANTS = {
     "docker": ["docker", "docker run", "docker compose up", "docker start", "docker ps"],
-    "litellm": ["litellm", "litellm --config", "litellm port 4000", "localhost 4000", "litellm proxy"],
-    "localstack": ["localstack", "awslocal", "localhost 4566", "localstack start", "docker compose up"],
+    "litellm": [
+        "litellm",
+        "litellm --config",
+        "litellm port 4000",
+        "localhost 4000",
+        "litellm proxy",
+    ],
+    "localstack": [
+        "localstack",
+        "awslocal",
+        "localhost 4566",
+        "localstack start",
+        "docker compose up",
+    ],
     "aws": ["aws", "aws --endpoint-url", "awslocal", "localhost 4566"],
     "awslocal": ["awslocal", "localstack", "localhost 4566"],
     "docker-compose": ["docker compose up", "docker compose", "docker"],
@@ -447,15 +468,31 @@ class QueryRewriteClient:
                 "examples": [
                     {
                         "query": "command to start docker?",
-                        "rewrites": ["docker", "docker start", "docker compose up", "docker run", "docker ps"],
+                        "rewrites": [
+                            "docker",
+                            "docker start",
+                            "docker compose up",
+                            "docker run",
+                            "docker ps",
+                        ],
                     },
                     {
                         "query": "start litellm",
-                        "rewrites": ["litellm", "litellm run", "litellm --config", "litellm port 4000"],
+                        "rewrites": [
+                            "litellm",
+                            "litellm run",
+                            "litellm --config",
+                            "litellm port 4000",
+                        ],
                     },
                     {
                         "query": "how do I run localstack?",
-                        "rewrites": ["localstack", "awslocal", "localstack start", "localhost 4566"],
+                        "rewrites": [
+                            "localstack",
+                            "awslocal",
+                            "localstack start",
+                            "localhost 4566",
+                        ],
                     },
                 ],
             },

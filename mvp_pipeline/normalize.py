@@ -222,9 +222,7 @@ def _normalize_text(raw_text: str, source_uri: str) -> tuple[TextArtifacts, list
 def normalize_extracted_text(extracted: ExtractedText) -> ExtractedText:
     source_uri = _extract_source_uri(extracted)
     artifacts, notes = _normalize_text(extracted.text, source_uri)
-    fidelity_state = (
-        FidelityState.EXACT if artifacts.text == extracted.text else FidelityState.NORMALIZED
-    )
+    fidelity_state = FidelityState.EXACT if artifacts.text == extracted.text else FidelityState.NORMALIZED
 
     return ExtractedText(
         extracted_text_id=build_extracted_text_id(extracted.source_snapshot_id, "norm"),

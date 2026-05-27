@@ -22,24 +22,19 @@ class MarkdownExportTest(unittest.TestCase):
 
             overview_path = input_dir / "overview.md"
             overview_path.write_text(
-                "# Overview\n"
-                "Review the project notes at [Docs](https://example.com/docs).\n",
+                "# Overview\nReview the project notes at [Docs](https://example.com/docs).\n",
                 encoding="utf-8",
             )
 
             commands_path = nested_dir / "commands.txt"
             commands_path.write_text(
-                "Run this command:\n\n"
-                "$ ls -la\n"
-                "pwd\n",
+                "Run this command:\n\n$ ls -la\npwd\n",
                 encoding="utf-8",
             )
 
             query_path = nested_dir / "query.md"
             query_path.write_text(
-                "Use this query:\n\n"
-                "SELECT * FROM users;\n"
-                "WHERE id = 1;\n",
+                "Use this query:\n\nSELECT * FROM users;\nWHERE id = 1;\n",
                 encoding="utf-8",
             )
 
@@ -78,7 +73,10 @@ class MarkdownExportTest(unittest.TestCase):
             self.assertEqual(export_result.files["links"].item_count, 1)
 
             processed_paths = {path for path in export_result.processed_files}
-            self.assertEqual(processed_paths, {overview_path.resolve(), commands_path.resolve(), query_path.resolve()})
+            self.assertEqual(
+                processed_paths,
+                {overview_path.resolve(), commands_path.resolve(), query_path.resolve()},
+            )
 
             self.assertEqual(export_result.skipped_files[0].path, unsupported_path.resolve())
             self.assertIn("unsupported file type", export_result.skipped_files[0].reason)

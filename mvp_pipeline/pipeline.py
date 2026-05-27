@@ -6,7 +6,13 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from canonical_data_model import DerivedArtifact, EvidenceUnit, ExtractedText, SourceDocument, StructuralRegion
+from canonical_data_model import (
+    DerivedArtifact,
+    EvidenceUnit,
+    ExtractedText,
+    SourceDocument,
+    StructuralRegion,
+)
 from query_retriever import EvidenceUnit as IndexedEvidenceUnit
 from query_retriever import ingest_evidence_units
 
@@ -92,10 +98,7 @@ def _persist_evidence_units(
     db_path: str = DEFAULT_EVIDENCE_DB_PATH,
     mode: str = "upsert",
 ) -> None:
-    indexed_units = [
-        _to_indexed_evidence_unit(source_document, evidence_unit)
-        for evidence_unit in evidence_units
-    ]
+    indexed_units = [_to_indexed_evidence_unit(source_document, evidence_unit) for evidence_unit in evidence_units]
     ingest_evidence_units(indexed_units, db_path=db_path, mode=mode)
     print(f"Indexed {len(indexed_units)} EvidenceUnits into {db_path}")
 
@@ -157,8 +160,7 @@ def run_folder_pipeline(
             continue
         results.append(result)
         indexed_units.extend(
-            _to_indexed_evidence_unit(result.source_document, evidence_unit)
-            for evidence_unit in result.evidence_units
+            _to_indexed_evidence_unit(result.source_document, evidence_unit) for evidence_unit in result.evidence_units
         )
 
     ingest_evidence_units(indexed_units, db_path=db_path, mode="replace")

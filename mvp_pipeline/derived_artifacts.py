@@ -8,7 +8,15 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from canonical_data_model import ArtifactTarget, DerivedArtifact, EvidenceUnit, RecordRef, SourceDocument, SourceLocator, SourceScope
+from canonical_data_model import (
+    ArtifactTarget,
+    DerivedArtifact,
+    EvidenceUnit,
+    RecordRef,
+    SourceDocument,
+    SourceLocator,
+    SourceScope,
+)
 
 from .evidence import (
     COMMAND_PROMPT_RE,
@@ -157,7 +165,12 @@ def _query_entry_for_unit(unit: EvidenceUnit) -> _TargetEntry | None:
             statement_line_length = len(raw_line)
         sql_lines.append(stripped)
 
-    if statement_kind is None or statement_line_index is None or statement_line_offset is None or statement_line_length is None:
+    if (
+        statement_kind is None
+        or statement_line_index is None
+        or statement_line_offset is None
+        or statement_line_length is None
+    ):
         return None
 
     return _TargetEntry(
@@ -302,10 +315,7 @@ def _build_artifact(
     payload = {
         "index_type": artifact_type,
         "entry_type": target_type,
-        "entries": [
-            {"target_ref_index": index, **entry.payload_entry}
-            for index, entry in enumerate(entries)
-        ],
+        "entries": [{"target_ref_index": index, **entry.payload_entry} for index, entry in enumerate(entries)],
     }
 
     derived_from_ids: list[str] = []

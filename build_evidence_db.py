@@ -12,9 +12,7 @@ from mvp_pipeline.pipeline import run_folder_pipeline
 def build_parser() -> argparse.ArgumentParser:
     """Create the command-line argument parser."""
 
-    parser = argparse.ArgumentParser(
-        description="Ingest a folder and build the SQLite EvidenceUnit database."
-    )
+    parser = argparse.ArgumentParser(description="Ingest a folder and build the SQLite EvidenceUnit database.")
     parser.add_argument(
         "input_folder",
         help="Folder containing source files to ingest.",

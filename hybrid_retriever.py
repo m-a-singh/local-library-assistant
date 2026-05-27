@@ -13,8 +13,6 @@ import json
 import logging
 import math
 import os
-import sqlite3
-import time
 import urllib.error
 import urllib.request
 from array import array
@@ -36,9 +34,7 @@ if not LOGGER.handlers:
     formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
     handler.setFormatter(formatter)
     LOGGER.addHandler(handler)
-LOGGER.setLevel(
-    logging.DEBUG if os.getenv("LOCAL_LIBRARY_ASSISTANT_DEBUG") else logging.CRITICAL
-)
+LOGGER.setLevel(logging.DEBUG if os.getenv("LOCAL_LIBRARY_ASSISTANT_DEBUG") else logging.CRITICAL)
 
 
 @dataclass
@@ -61,14 +57,8 @@ class HybridRetrievalResult:
 @dataclass
 class HybridRetrieverConfig:
     api_base: str = "http://localhost:4000"
-    api_key: str = field(
-        default_factory=lambda: os.getenv("LITELLM_PROXY_API_KEY", "local-dev-key")
-    )
-    embedding_model: str = field(
-        default_factory=lambda: os.getenv(
-            "STEP14_EMBED_MODEL", "text-embedding-ada-002"
-        )
-    )
+    api_key: str = field(default_factory=lambda: os.getenv("LITELLM_PROXY_API_KEY", "local-dev-key"))
+    embedding_model: str = field(default_factory=lambda: os.getenv("STEP14_EMBED_MODEL", "text-embedding-ada-002"))
     timeout_seconds: float = 120.0
     batch_size: int = 24
     lexical_weight: float = 1.0
@@ -127,9 +117,7 @@ def format_hybrid_retrieval_result_text(result: HybridRetrievalResult) -> str:
     """Render a hybrid retrieval result as human-readable text."""
 
     lines = [f"Query: {result.query}"]
-    lines.append(
-        f"Retrieval mix: lexical={result.lexical_hit_count}, semantic={result.semantic_hit_count}"
-    )
+    lines.append(f"Retrieval mix: lexical={result.lexical_hit_count}, semantic={result.semantic_hit_count}")
 
     notes = result.retrieval_summary.get("notes", [])
     if isinstance(notes, list):
@@ -150,16 +138,10 @@ def format_hybrid_retrieval_result_text(result: HybridRetrievalResult) -> str:
         lines.append(f"  unit_id: {hit.unit.unit_id}")
         lines.append(f"  type: {hit.unit.type}")
         lines.append(f"  source_file: {hit.unit.source_file}")
-        lines.append(
-            f"  region: {json.dumps(hit.unit.region, ensure_ascii=False, sort_keys=True)}"
-        )
-        lines.append(
-            f"  signals: {json.dumps(hit.unit.signals, ensure_ascii=False, sort_keys=True)}"
-        )
+        lines.append(f"  region: {json.dumps(hit.unit.region, ensure_ascii=False, sort_keys=True)}")
+        lines.append(f"  signals: {json.dumps(hit.unit.signals, ensure_ascii=False, sort_keys=True)}")
         lines.append("  text:")
-        lines.extend(
-            f"    {line}" for line in (hit.unit.text.splitlines() or ["<empty>"])
-        )
+        lines.extend(f"    {line}" for line in (hit.unit.text.splitlines() or ["<empty>"]))
         lines.append("")
 
     if result.neighbors:
@@ -174,17 +156,10 @@ def format_hybrid_retrieval_result_text(result: HybridRetrievalResult) -> str:
                 lines.append(f"      unit_id: {unit.unit_id}")
                 lines.append(f"      type: {unit.type}")
                 lines.append(f"      source_file: {unit.source_file}")
-                lines.append(
-                    f"      region: {json.dumps(unit.region, ensure_ascii=False, sort_keys=True)}"
-                )
-                lines.append(
-                    f"      signals: {json.dumps(unit.signals, ensure_ascii=False, sort_keys=True)}"
-                )
+                lines.append(f"      region: {json.dumps(unit.region, ensure_ascii=False, sort_keys=True)}")
+                lines.append(f"      signals: {json.dumps(unit.signals, ensure_ascii=False, sort_keys=True)}")
                 lines.append("      text:")
-                lines.extend(
-                    f"        {line}"
-                    for line in (unit.text.splitlines() or ["<empty>"])
-                )
+                lines.extend(f"        {line}" for line in (unit.text.splitlines() or ["<empty>"]))
 
     return "\n".join(lines).rstrip()
 
@@ -272,9 +247,7 @@ class HybridRetriever:
             for batch in _batched(records_to_embed, self.config.batch_size):
                 embeddings = self._embed_texts([item[1] for item in batch])
                 payloads = []
-                for (unit_id, _embedding_text, text_hash), vector in zip(
-                    batch, embeddings, strict=True
-                ):
+                for (unit_id, _embedding_text, text_hash), vector in zip(batch, embeddings, strict=True):
                     packed, dim, norm = self._pack_vector(vector)
                     payloads.append(
                         (
@@ -325,9 +298,7 @@ class HybridRetriever:
         self._last_index_summary = summary
         return summary
 
-    def semantic_search(
-        self, query: str, *, top_k: int = 5, ensure_index: bool = True
-    ) -> list[SemanticHit]:
+    def semantic_search(self, query: str, *, top_k: int = 5, ensure_index: bool = True) -> list[SemanticHit]:
         """Return top semantic hits for a query using the auxiliary embedding index."""
 
         if ensure_index:
@@ -345,9 +316,7 @@ class HybridRetriever:
         for unit_id, (doc_vector, doc_norm) in vectors.items():
             if doc_norm == 0.0:
                 continue
-            similarity = self._cosine_similarity(
-                query_array, query_norm, doc_vector, doc_norm
-            )
+            similarity = self._cosine_similarity(query_array, query_norm, doc_vector, doc_norm)
             scored.append((similarity, unit_id))
 
         top_hits = heapq.nlargest(top_k, scored, key=lambda item: item[0])
@@ -373,20 +342,14 @@ class HybridRetriever:
         semantic_limit = semantic_top_k if semantic_top_k is not None else max(top_k, 6)
 
         if lexical_result is None:
-            lexical_result = self.index.retrieve(
-                query, top_k=lexical_limit, expand_neighbors=expand_neighbors
-            )
+            lexical_result = self.index.retrieve(query, top_k=lexical_limit, expand_neighbors=expand_neighbors)
 
         notes: list[str] = []
         semantic_index_summary: dict[str, Any] | None = None
         semantic_hits: list[SemanticHit] = []
         try:
-            semantic_index_summary = self.ensure_semantic_index(
-                rebuild=rebuild_semantic_index
-            )
-            semantic_hits = self.semantic_search(
-                query, top_k=semantic_limit, ensure_index=False
-            )
+            semantic_index_summary = self.ensure_semantic_index(rebuild=rebuild_semantic_index)
+            semantic_hits = self.semantic_search(query, top_k=semantic_limit, ensure_index=False)
         except Exception as exc:
             notes.append(f"semantic_unavailable:{type(exc).__name__}")
 
@@ -426,12 +389,8 @@ class HybridRetriever:
         lexical_rank_map = {hit.unit.unit_id: hit.rank for hit in lexical_result.hits}
         semantic_rank_map = {hit.unit_id: hit.rank for hit in semantic_hits}
 
-        semantic_unit_ids = [
-            hit.unit_id for hit in semantic_hits if hit.unit_id not in lexical_rank_map
-        ]
-        semantic_units = {
-            unit.unit_id: unit for unit in self.index._fetch_by_ids(semantic_unit_ids)
-        }
+        semantic_unit_ids = [hit.unit_id for hit in semantic_hits if hit.unit_id not in lexical_rank_map]
+        semantic_units = {unit.unit_id: unit for unit in self.index._fetch_by_ids(semantic_unit_ids)}
 
         all_unit_ids = sorted(set(lexical_rank_map) | set(semantic_rank_map))
         scored: list[tuple[float, str, EvidenceUnit]] = []
@@ -448,9 +407,7 @@ class HybridRetriever:
             if lexical_rank is not None:
                 score += self.config.lexical_weight / (self.config.rrf_k + lexical_rank)
             if semantic_rank is not None:
-                score += self.config.semantic_weight / (
-                    self.config.rrf_k + semantic_rank
-                )
+                score += self.config.semantic_weight / (self.config.rrf_k + semantic_rank)
             if lexical_rank is not None and semantic_rank is not None:
                 score += 0.02
             score += self._confidence_bonus(unit)
@@ -502,10 +459,7 @@ class HybridRetriever:
             )
 
     def _load_semantic_vectors(self) -> dict[str, tuple[array, float]]:
-        if (
-            self._semantic_cache is not None
-            and self._semantic_cache_model == self.config.embedding_model
-        ):
+        if self._semantic_cache is not None and self._semantic_cache_model == self.config.embedding_model:
             return self._semantic_cache
 
         rows = self.index._conn.execute(
@@ -544,9 +498,7 @@ class HybridRetriever:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(
-                request, timeout=self.config.timeout_seconds
-            ) as response:
+            with urllib.request.urlopen(request, timeout=self.config.timeout_seconds) as response:
                 raw_response = response.read().decode("utf-8")
         except urllib.error.HTTPError as exc:
             error_body = exc.read().decode("utf-8", errors="replace")
@@ -581,9 +533,7 @@ class HybridRetriever:
         return vector, len(vector), norm
 
     @staticmethod
-    def _cosine_similarity(
-        query_vector: array, query_norm: float, doc_vector: array, doc_norm: float
-    ) -> float:
+    def _cosine_similarity(query_vector: array, query_norm: float, doc_vector: array, doc_norm: float) -> float:
         if query_norm == 0.0 or doc_norm == 0.0:
             return 0.0
         dot = 0.0

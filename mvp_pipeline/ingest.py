@@ -237,8 +237,7 @@ def _first_successful_text_reader(
         except Exception as exc:
             failures.append(f"{reader_name}:{exc}")
     raise ValueError(
-        f"No PDF extraction backend succeeded for {path} "
-        f"({' ; '.join(failures) if failures else 'no backends tried'})"
+        f"No PDF extraction backend succeeded for {path} ({' ; '.join(failures) if failures else 'no backends tried'})"
     )
 
 
@@ -337,11 +336,6 @@ def ingest_folder(folder_path: str | Path) -> tuple[list[SourceDocument], list[E
         extracted_texts.append(extracted_text)
         processed_files += 1
 
-    print(
-        "Ingestion summary: "
-        f"total={total_files} "
-        f"processed={processed_files} "
-        f"skipped={skipped_files}"
-    )
+    print(f"Ingestion summary: total={total_files} processed={processed_files} skipped={skipped_files}")
 
     return source_documents, extracted_texts

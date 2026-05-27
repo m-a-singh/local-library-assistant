@@ -1,6 +1,7 @@
 import unittest
 
 from canonical_data_model import (
+    MINIMAL_SCHEMA,
     AmbiguityMarker,
     AmbiguitySeverity,
     AnchoredSpan,
@@ -11,7 +12,6 @@ from canonical_data_model import (
     EvidenceUnit,
     ExtractedText,
     FidelityState,
-    MINIMAL_SCHEMA,
     ProvenanceLink,
     RecordRef,
     ResolverStatus,
@@ -426,7 +426,10 @@ class CanonicalDataModelTest(unittest.TestCase):
             payload={
                 "commands": [
                     {"command": "ls", "evidence_unit_id": first_evidence.evidence_unit_id},
-                    {"command": "cat file.txt", "evidence_unit_id": second_evidence.evidence_unit_id},
+                    {
+                        "command": "cat file.txt",
+                        "evidence_unit_id": second_evidence.evidence_unit_id,
+                    },
                 ]
             },
             producer_name="command-indexer",
@@ -571,7 +574,10 @@ class CanonicalDataModelTest(unittest.TestCase):
                     upstream_entity_refs=[RecordRef("StructuralRegion", doc_region.structural_region_id)],
                 ),
             ],
-            structural_region_ids=[function_region.structural_region_id, body_region.structural_region_id],
+            structural_region_ids=[
+                function_region.structural_region_id,
+                body_region.structural_region_id,
+            ],
             ordinal=2,
             boundary_rationale="function body stands alone but docstring remains attached context",
             content_facets=["code"],
@@ -820,8 +826,14 @@ class CanonicalDataModelTest(unittest.TestCase):
         neighbors = graph.get_neighbors(beta, 1)
         expanded = graph.expand_context(beta, 1)
 
-        self.assertEqual([unit.evidence_unit_id for unit in neighbors], [alpha.evidence_unit_id, gamma.evidence_unit_id])
-        self.assertEqual([unit.evidence_unit_id for unit in expanded], [alpha.evidence_unit_id, beta.evidence_unit_id, gamma.evidence_unit_id])
+        self.assertEqual(
+            [unit.evidence_unit_id for unit in neighbors],
+            [alpha.evidence_unit_id, gamma.evidence_unit_id],
+        )
+        self.assertEqual(
+            [unit.evidence_unit_id for unit in expanded],
+            [alpha.evidence_unit_id, beta.evidence_unit_id, gamma.evidence_unit_id],
+        )
         self.assertEqual(beta.text_span, TextSpan(6, 10))
 
     def test_evidence_unit_requires_recoverable_support_locator(self) -> None:

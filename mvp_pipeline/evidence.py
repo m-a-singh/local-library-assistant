@@ -4,15 +4,17 @@ from __future__ import annotations
 
 import re
 
-from canonical_data_model import AnchoredSpan, SourceLocator, TextSpan
 from canonical_data_model import (
+    AnchoredSpan,
     ConfidenceLevel,
     EvidenceUnit,
     ExtractedText,
     ProvenanceLink,
     RecordRef,
     SourceDocument,
+    SourceLocator,
     StructuralRegion,
+    TextSpan,
     TrustState,
 )
 
@@ -31,7 +33,9 @@ FENCE_LANGUAGE_RE = re.compile(r"^(?:`{3,}|~{3,})([A-Za-z0-9_+-]*)")
 HTTP_REQUEST_LINE_RE = re.compile(r"^(GET|POST|PUT|DELETE|HEAD|PATCH)\s+(\S+)$", re.IGNORECASE)
 COMMAND_PROMPT_RE = re.compile(r"^(?:[$%]|[\w.-]+@[\w.-]+[:~/$._-]*[$#])\s+\S")
 COMMAND_PROMPT_PREFIX_RE = re.compile(r"^(?:[$%]\s*|[\w.-]+@[\w.-]+[:~/$._-]*[$#]\s+)")
-EXPLANATORY_START_RE = re.compile(r"^(run|use|execute|query|sql|command|commands|example|examples|try|note)\b", re.IGNORECASE)
+EXPLANATORY_START_RE = re.compile(
+    r"^(run|use|execute|query|sql|command|commands|example|examples|try|note)\b", re.IGNORECASE
+)
 ENV_ASSIGNMENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=.+$")
 SHELL_OPERATOR_RE = re.compile(r"(\|\||&&|2>|>>|[|<>])")
 SEPARATOR_LINE_RE = re.compile(r"^(?:[-=_*]){3,}$")
@@ -64,7 +68,7 @@ UNAMBIGUOUS_COMMAND_HEAD_TOKENS = {
     "vault",
     "wget",
     "yarn",
-    "psql"
+    "psql",
 }
 GENERIC_COMMAND_HEAD_TOKENS = {
     "awk",
@@ -123,7 +127,16 @@ COMMAND_SUBCOMMAND_HINT_TOKENS = {
 }
 REST_STYLE_COMMAND_VERBS = {"delete", "get", "head", "patch", "post", "put"}
 SHELL_FENCE_LANGUAGES = {"bash", "console", "commandline", "shell", "sh", "terminal", "zsh"}
-COMMAND_SPLIT_HEAD_TOKENS = {"aws", "awslocal", "docker", "export", "git", "psql", "python", "python3"}
+COMMAND_SPLIT_HEAD_TOKENS = {
+    "aws",
+    "awslocal",
+    "docker",
+    "export",
+    "git",
+    "psql",
+    "python",
+    "python3",
+}
 SEARCH_API_ENDPOINT_HINTS = ("_alias", "_aliases", "_msearch", "_search")
 PAYLOAD_FLAG_HINTS = {
     "--attributes",
@@ -282,9 +295,7 @@ def _detection_lines(
             stripped = raw_line.strip()
             if not stripped:
                 continue
-            if region.region_type == "fenced_code_block" and (
-                stripped.startswith("```") or stripped.startswith("~~~")
-            ):
+            if region.region_type == "fenced_code_block" and (stripped.startswith("```") or stripped.startswith("~~~")):
                 continue
             lines.append(stripped)
     return lines
@@ -337,9 +348,7 @@ def _is_markdown_table(lines: list[str]) -> bool:
         return False
     if not any(_is_markdown_table_separator(line) for line in lines[1:]):
         return False
-    tableish_line_count = sum(
-        1 for line in lines if _is_markdown_table_row(line) or _is_markdown_table_separator(line)
-    )
+    tableish_line_count = sum(1 for line in lines if _is_markdown_table_row(line) or _is_markdown_table_separator(line))
     return tableish_line_count >= max(2, len(lines) - 1)
 
 
@@ -556,18 +565,88 @@ def _specialize_unit_type(
     command_candidate = command_strength >= 3
 
     if mermaid_block:
-        return "diagram", False, False, False, table_candidate, True, sql_strength, command_strength, json_query_strength
+        return (
+            "diagram",
+            False,
+            False,
+            False,
+            table_candidate,
+            True,
+            sql_strength,
+            command_strength,
+            json_query_strength,
+        )
     if table_candidate:
-        return "table", False, False, False, True, False, sql_strength, command_strength, json_query_strength
+        return (
+            "table",
+            False,
+            False,
+            False,
+            True,
+            False,
+            sql_strength,
+            command_strength,
+            json_query_strength,
+        )
     if json_query_candidate:
-        return "json_query", False, False, True, False, False, sql_strength, command_strength, json_query_strength
+        return (
+            "json_query",
+            False,
+            False,
+            True,
+            False,
+            False,
+            sql_strength,
+            command_strength,
+            json_query_strength,
+        )
     if fence_language in SHELL_FENCE_LANGUAGES and command_strength >= 2:
-        return "command", sql_candidate, True, False, False, False, sql_strength, command_strength, json_query_strength
+        return (
+            "command",
+            sql_candidate,
+            True,
+            False,
+            False,
+            False,
+            sql_strength,
+            command_strength,
+            json_query_strength,
+        )
     if sql_strength > command_strength and sql_candidate:
-        return "sql", sql_candidate, command_candidate, False, False, False, sql_strength, command_strength, json_query_strength
+        return (
+            "sql",
+            sql_candidate,
+            command_candidate,
+            False,
+            False,
+            False,
+            sql_strength,
+            command_strength,
+            json_query_strength,
+        )
     if command_candidate:
-        return "command", sql_candidate, command_candidate, False, False, False, sql_strength, command_strength, json_query_strength
-    return base_unit_type, sql_candidate, command_candidate, False, False, False, sql_strength, command_strength, json_query_strength
+        return (
+            "command",
+            sql_candidate,
+            command_candidate,
+            False,
+            False,
+            False,
+            sql_strength,
+            command_strength,
+            json_query_strength,
+        )
+    return (
+        base_unit_type,
+        sql_candidate,
+        command_candidate,
+        False,
+        False,
+        False,
+        sql_strength,
+        command_strength,
+        json_query_strength,
+    )
 
 
 def _is_explanatory_prose(lines: list[str]) -> bool:
@@ -684,12 +763,9 @@ def _payload_flags(lines: list[str]) -> list[str]:
         stripped = line.strip()
         lowered = stripped.lower()
 
-        if (
-            len(stripped) >= 120
-            and (
-                ("{" in stripped and "}" in stripped and ":" in stripped)
-                or any(token in lowered for token in ("base64", "jq -n", "python -c", "openssl base64"))
-            )
+        if len(stripped) >= 120 and (
+            ("{" in stripped and "}" in stripped and ":" in stripped)
+            or any(token in lowered for token in ("base64", "jq -n", "python -c", "openssl base64"))
         ):
             has_embedded_payload = True
 
@@ -697,9 +773,7 @@ def _payload_flags(lines: list[str]) -> list[str]:
             has_embedded_payload = True
 
         if len(stripped) >= 220 and (
-            ENV_ASSIGNMENT_RE.match(stripped)
-            or any(quote in stripped for quote in ('"', "'"))
-            or "$(" in stripped
+            ENV_ASSIGNMENT_RE.match(stripped) or any(quote in stripped for quote in ('"', "'")) or "$(" in stripped
         ):
             has_oversized_inline_payload = True
 
@@ -711,11 +785,7 @@ def _payload_flags(lines: list[str]) -> list[str]:
 
 
 def _lines_for_text_span(normalized: ExtractedText, text_span: TextSpan) -> list[str]:
-    return [
-        line.strip()
-        for line in normalized.text[text_span.start : text_span.end].splitlines()
-        if line.strip()
-    ]
+    return [line.strip() for line in normalized.text[text_span.start : text_span.end].splitlines() if line.strip()]
 
 
 def _derive_confidence_and_flags(
@@ -739,10 +809,7 @@ def _derive_confidence_and_flags(
         unit_type == "mixed"
         or len(content_facets) > 1
         or "attached_context_above" in signal_set
-        or (
-            "has_heading" in signal_set
-            and ("command_candidate" in signal_set or "sql_candidate" in signal_set)
-        )
+        or ("has_heading" in signal_set and ("command_candidate" in signal_set or "sql_candidate" in signal_set))
         or mixed_modes
     ):
         flags.append("mixed_content")
@@ -763,9 +830,7 @@ def _derive_confidence_and_flags(
         strong_structural_evidence = "mermaid_block" in signal_set and "has_fenced_code_block" in signal_set
     elif unit_type == "heading_section":
         strong_structural_evidence = (
-            "has_heading" in signal_set
-            and "has_paragraph_body" in signal_set
-            and "multi_region_unit" in signal_set
+            "has_heading" in signal_set and "has_paragraph_body" in signal_set and "multi_region_unit" in signal_set
         )
     elif unit_type == "table":
         strong_structural_evidence = "table_candidate" in signal_set
@@ -786,8 +851,10 @@ def _derive_confidence_and_flags(
         return ConfidenceLevel.MEDIUM, flags
     if strong_structural_evidence:
         return ConfidenceLevel.HIGH, flags
-    if "has_paragraph_body" in signal_set or "single_region_unit" in signal_set or any(
-        signal.startswith("unit_type:") for signal in signal_set
+    if (
+        "has_paragraph_body" in signal_set
+        or "single_region_unit" in signal_set
+        or any(signal.startswith("unit_type:") for signal in signal_set)
     ):
         return ConfidenceLevel.MEDIUM, flags
     return ConfidenceLevel.LOW, flags
@@ -882,7 +949,9 @@ def _split_json_query_segments(
     source_uri: str,
     segments: list[tuple[str, TextSpan, SourceLocator]],
 ) -> list[AnchoredSpan]:
-    request_indices = [index for index, (text, _, _) in enumerate(segments) if _http_search_request_match(text) is not None]
+    request_indices = [
+        index for index, (text, _, _) in enumerate(segments) if _http_search_request_match(text) is not None
+    ]
     if len(request_indices) < 2:
         return []
 
@@ -967,7 +1036,17 @@ def build_evidence_units(
 
         combined_regions = sorted(combined_regions, key=_sort_key)
         base_unit_type = _classify_base_unit_type(combined_regions)
-        unit_type, sql_candidate, command_candidate, opensearch_candidate, table_candidate, mermaid_block, sql_strength, command_strength, opensearch_strength = _specialize_unit_type(
+        (
+            unit_type,
+            sql_candidate,
+            command_candidate,
+            opensearch_candidate,
+            table_candidate,
+            mermaid_block,
+            sql_strength,
+            command_strength,
+            opensearch_strength,
+        ) = _specialize_unit_type(
             normalized,
             combined_regions,
             base_unit_type,
@@ -1077,9 +1156,7 @@ def build_evidence_units(
                     locator=attached_context_region.primary_span.locator,
                     role="attached_context",
                     recoverable=True,
-                    upstream_entity_refs=[
-                        RecordRef("StructuralRegion", attached_context_region.structural_region_id)
-                    ],
+                    upstream_entity_refs=[RecordRef("StructuralRegion", attached_context_region.structural_region_id)],
                     text_span=attached_context_region.primary_span.text_span,
                 )
             )

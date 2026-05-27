@@ -27,9 +27,7 @@ if not LOGGER.handlers:
     formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
     handler.setFormatter(formatter)
     LOGGER.addHandler(handler)
-LOGGER.setLevel(
-    logging.DEBUG if os.getenv("LOCAL_LIBRARY_ASSISTANT_DEBUG") else logging.CRITICAL
-)
+LOGGER.setLevel(logging.DEBUG if os.getenv("LOCAL_LIBRARY_ASSISTANT_DEBUG") else logging.CRITICAL)
 
 TOKEN_RE = re.compile(r"[A-Za-z0-9_./:-]+")
 STOPWORDS = {
@@ -108,18 +106,14 @@ class GroundedAnswerRetryPolicy:
 @dataclass
 class GroundedAnswerConfig:
     ollama_base_url: str = "http://localhost:4000"
-    litellm_api_key: str = field(
-        default_factory=lambda: os.getenv("LITELLM_PROXY_API_KEY", "local-dev-key")
-    )
+    litellm_api_key: str = field(default_factory=lambda: os.getenv("LITELLM_PROXY_API_KEY", "local-dev-key"))
     # Model id/tag for the upstream chat-completions provider (LiteLLM/Ollama/etc).
     # Set via env var to avoid leaking internal model naming conventions.
     model: str = field(default_factory=lambda: os.getenv("LLA_ANSWER_MODEL", "llama3:8b"))
     max_tokens: int = 700
     timeout_seconds: float = 120.0
     temperature: float = 0.1
-    retry_policy: GroundedAnswerRetryPolicy = field(
-        default_factory=GroundedAnswerRetryPolicy
-    )
+    retry_policy: GroundedAnswerRetryPolicy = field(default_factory=GroundedAnswerRetryPolicy)
     json_correction_attempts: int = 2
     max_citations: int = 4
 
@@ -142,9 +136,7 @@ def grounded_answer_to_dict(answer: GroundedAnswer) -> dict[str, Any]:
     return {
         "query": answer.query,
         "answer": answer.answer,
-        "citations": [
-            evidence_citation_to_dict(citation) for citation in answer.citations
-        ],
+        "citations": [evidence_citation_to_dict(citation) for citation in answer.citations],
         "used_unit_ids": list(answer.used_unit_ids),
         "retrieval_summary": dict(answer.retrieval_summary),
     }
@@ -175,9 +167,7 @@ def format_grounded_answer_text(answer: GroundedAnswer) -> str:
             if line_label:
                 lines.append(f"- {source_name}:{line_label} [{citation.unit_id}]")
             elif citation.region_summary:
-                lines.append(
-                    f"- {source_name} [{citation.region_summary}] [{citation.unit_id}]"
-                )
+                lines.append(f"- {source_name} [{citation.region_summary}] [{citation.unit_id}]")
             else:
                 lines.append(f"- {source_name} [{citation.unit_id}]")
 
@@ -204,21 +194,15 @@ def _support_lines(summary: dict[str, Any]) -> list[str]:
     context_unit_count = summary.get("context_unit_count")
     if hit_count is not None or context_unit_count is not None:
         hits_label = str(hit_count) if hit_count is not None else "?"
-        context_label = (
-            str(context_unit_count) if context_unit_count is not None else "?"
-        )
+        context_label = str(context_unit_count) if context_unit_count is not None else "?"
         lines.append(f"- evidence: {hits_label} hits, {context_label} context units")
 
     lexical_hit_count = summary.get("lexical_hit_count")
     semantic_hit_count = summary.get("semantic_hit_count")
     if lexical_hit_count is not None or semantic_hit_count is not None:
         lexical_label = str(lexical_hit_count) if lexical_hit_count is not None else "?"
-        semantic_label = (
-            str(semantic_hit_count) if semantic_hit_count is not None else "?"
-        )
-        lines.append(
-            f"- retrieval mix: lexical={lexical_label}, semantic={semantic_label}"
-        )
+        semantic_label = str(semantic_hit_count) if semantic_hit_count is not None else "?"
+        lines.append(f"- retrieval mix: lexical={lexical_label}, semantic={semantic_label}")
 
     fallback_reason = summary.get("fallback_reason")
     if isinstance(fallback_reason, str) and fallback_reason:
@@ -264,9 +248,7 @@ class GroundedAnswerClient:
     ) -> GroundedAnswer:
         """Retrieve lexical evidence and synthesize a grounded answer."""
 
-        retrieval_result = self.index.retrieve(
-            query, top_k=top_k, expand_neighbors=expand_neighbors
-        )
+        retrieval_result = self.index.retrieve(query, top_k=top_k, expand_neighbors=expand_neighbors)
         return self.answer_from_retrieval_result(
             query,
             retrieval_result,
@@ -318,19 +300,12 @@ class GroundedAnswerClient:
         elif self._looks_insufficient_answer(answer_text) and relevant_units:
             answer_text = self._best_effort_grounded_answer(relevant_units)
 
-        used_unit_ids = self._normalize_citation_ids(
-            parsed.get("citation_unit_ids"), units_by_id
-        )
+        used_unit_ids = self._normalize_citation_ids(parsed.get("citation_unit_ids"), units_by_id)
         if not used_unit_ids:
             if relevant_units:
-                used_unit_ids = [
-                    unit.unit_id for unit in relevant_units[: self.config.max_citations]
-                ]
+                used_unit_ids = [unit.unit_id for unit in relevant_units[: self.config.max_citations]]
             else:
-                used_unit_ids = [
-                    hit.unit.unit_id
-                    for hit in retrieval_result.hits[: self.config.max_citations]
-                ]
+                used_unit_ids = [hit.unit.unit_id for hit in retrieval_result.hits[: self.config.max_citations]]
 
         citations = [
             self._citation_from_unit(units_by_id[unit_id])
@@ -356,9 +331,7 @@ class GroundedAnswerClient:
             retrieval_summary=retrieval_summary,
         )
 
-    def _generate_answer_json(
-        self, query: str, context_units: list[EvidenceUnit]
-    ) -> str:
+    def _generate_answer_json(self, query: str, context_units: list[EvidenceUnit]) -> str:
         """Call the local LiteLLM proxy and require a JSON answer payload."""
 
         system_prompt = (
@@ -379,9 +352,7 @@ class GroundedAnswerClient:
         user_prompt = json.dumps(
             {
                 "query": query,
-                "evidence_units": [
-                    self._prompt_unit_payload(unit) for unit in context_units
-                ],
+                "evidence_units": [self._prompt_unit_payload(unit) for unit in context_units],
                 "citation_requirements": {
                     "max_citations": self.config.max_citations,
                     "prefer_filename_and_line_grounding": True,
@@ -405,9 +376,7 @@ class GroundedAnswerClient:
                 return json.dumps(parsed, ensure_ascii=False)
             except Exception:
                 if attempt >= self.config.json_correction_attempts:
-                    raise GroundedAnswerJSONError(
-                        "Failed to produce valid grounded-answer JSON"
-                    )
+                    raise GroundedAnswerJSONError("Failed to produce valid grounded-answer JSON")
                 correction_prompt = (
                     "Your previous response was invalid. Return JSON only with keys "
                     "answer and citation_unit_ids. Do not include markdown or prose outside JSON.\n"
@@ -460,28 +429,20 @@ class GroundedAnswerClient:
                     },
                     method="POST",
                 )
-                with urllib.request.urlopen(
-                    request, timeout=self.config.timeout_seconds
-                ) as response:
+                with urllib.request.urlopen(request, timeout=self.config.timeout_seconds) as response:
                     raw_response = response.read().decode("utf-8")
                 parsed_response = json.loads(raw_response)
                 choices = parsed_response.get("choices", [])
                 if not choices:
-                    raise GroundedAnswerServiceError(
-                        "Grounded answer response did not include choices"
-                    )
+                    raise GroundedAnswerServiceError("Grounded answer response did not include choices")
                 message = choices[0].get("message", {})
                 content = message.get("content")
                 if not isinstance(content, str):
-                    raise GroundedAnswerServiceError(
-                        "Grounded answer response did not include message content"
-                    )
+                    raise GroundedAnswerServiceError("Grounded answer response did not include message content")
                 return content
             except urllib.error.HTTPError as exc:
                 error_body = exc.read().decode("utf-8", errors="replace")
-                last_exc = GroundedAnswerServiceError(
-                    f"Grounded answer service failure: HTTP {exc.code}: {error_body}"
-                )
+                last_exc = GroundedAnswerServiceError(f"Grounded answer service failure: HTTP {exc.code}: {error_body}")
             except Exception as exc:
                 last_exc = exc
             if attempt < attempts:
@@ -521,14 +482,10 @@ class GroundedAnswerClient:
 
         parsed = self._parse_json_only(raw_text)
         if not isinstance(parsed, dict):
-            raise GroundedAnswerJSONError(
-                "Grounded answer payload must be a JSON object"
-            )
+            raise GroundedAnswerJSONError("Grounded answer payload must be a JSON object")
         return parsed
 
-    def _relevant_units(
-        self, query: str, units: list[EvidenceUnit]
-    ) -> list[EvidenceUnit]:
+    def _relevant_units(self, query: str, units: list[EvidenceUnit]) -> list[EvidenceUnit]:
         """Return units with meaningful lexical overlap with the query."""
 
         if not units:
@@ -568,10 +525,7 @@ class GroundedAnswerClient:
         stripped_query = query.strip().lower()
         if stripped_query and stripped_query in lowered_text:
             score += 4
-        if (
-            unit.type in {"command", "sql", "json_query", "code"}
-            and query_tokens & unit_tokens
-        ):
+        if unit.type in {"command", "sql", "json_query", "code"} and query_tokens & unit_tokens:
             score += 1
         return score
 
@@ -617,9 +571,7 @@ class GroundedAnswerClient:
             return heading
         return " ".join(lines[:3]).strip()
 
-    def _collect_context_units(
-        self, retrieval_result: RetrievalResult
-    ) -> list[EvidenceUnit]:
+    def _collect_context_units(self, retrieval_result: RetrievalResult) -> list[EvidenceUnit]:
         """Collect hit units plus optional neighbors in deterministic order."""
 
         ordered_units: list[EvidenceUnit] = []
@@ -746,8 +698,6 @@ def answer_query(
 
     client = GroundedAnswerClient(db_path=db_path)
     try:
-        return client.answer_query(
-            query, top_k=top_k, expand_neighbors=expand_neighbors
-        )
+        return client.answer_query(query, top_k=top_k, expand_neighbors=expand_neighbors)
     finally:
         client.close()

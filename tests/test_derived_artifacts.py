@@ -39,7 +39,10 @@ class DerivedArtifactsTest(unittest.TestCase):
             self.assertEqual([target.value for target in command_index.target_refs], ["ls -la", "pwd"])
             self.assertEqual(
                 command_index.payload["entries"],
-                [{"target_ref_index": 0, "unit_line_index": 2}, {"target_ref_index": 1, "unit_line_index": 3}],
+                [
+                    {"target_ref_index": 0, "unit_line_index": 2},
+                    {"target_ref_index": 1, "unit_line_index": 3},
+                ],
             )
             self.assertEqual(command_index.derived_from[0].entity_type, "EvidenceUnit")
             self.assertEqual(command_index.target_refs[0].locator.source_uri, result.source_document.source_uri)
@@ -47,12 +50,18 @@ class DerivedArtifactsTest(unittest.TestCase):
 
             query_index = artifacts_by_type["query_index"]
             self.assertEqual([target.value for target in query_index.target_refs], ["SELECT * FROM users;"])
-            self.assertEqual(query_index.payload["entries"], [{"target_ref_index": 0, "statement_kind": "select"}])
+            self.assertEqual(
+                query_index.payload["entries"],
+                [{"target_ref_index": 0, "statement_kind": "select"}],
+            )
             self.assertEqual(query_index.target_refs[0].locator.line_start, 11)
 
             link_index = artifacts_by_type["link_index"]
             self.assertEqual([target.value for target in link_index.target_refs], ["https://example.com/docs"])
-            self.assertEqual(link_index.payload["entries"], [{"target_ref_index": 0, "link_kind": "markdown_link"}])
+            self.assertEqual(
+                link_index.payload["entries"],
+                [{"target_ref_index": 0, "link_kind": "markdown_link"}],
+            )
             self.assertEqual(link_index.target_refs[0].locator.line_start, 2)
 
             graph = EvidenceGraph()

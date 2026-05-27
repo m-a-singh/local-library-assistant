@@ -60,9 +60,7 @@ def retrieval_result_to_dict(result: RetrievalResult) -> dict[str, Any]:
 def get_index_stats(index: EvidenceUnitIndex) -> dict[str, int]:
     """Return simple row-count diagnostics for the current SQLite index."""
 
-    row = index._conn.execute(
-        "SELECT COUNT(*) AS unit_count FROM evidence_units"
-    ).fetchone()
+    row = index._conn.execute("SELECT COUNT(*) AS unit_count FROM evidence_units").fetchone()
     unit_count = int(row["unit_count"]) if row is not None else 0
     return {"unit_count": unit_count}
 
@@ -145,7 +143,12 @@ def _load_grounded_answer_support() -> tuple[Any, Any, Any, Any]:
         grounded_answer_to_dict,
     )
 
-    return GroundedAnswerClient, GroundedAnswerServiceError, format_grounded_answer_text, grounded_answer_to_dict
+    return (
+        GroundedAnswerClient,
+        GroundedAnswerServiceError,
+        format_grounded_answer_text,
+        grounded_answer_to_dict,
+    )
 
 
 def _load_hybrid_support() -> tuple[Any, Any, Any]:
@@ -174,9 +177,7 @@ def _retrieve_with_fallback(
         lexical_result = index.retrieve(query, top_k=top_k, expand_neighbors=neighbors)
         return lexical_result, {"retrieval_mode": "lexical"}, None
 
-    HybridRetriever, _format_hybrid_retrieval_result_text, _hybrid_retrieval_result_to_dict = (
-        _load_hybrid_support()
-    )
+    HybridRetriever, _format_hybrid_retrieval_result_text, _hybrid_retrieval_result_to_dict = _load_hybrid_support()
     try:
         hybrid_retriever = HybridRetriever(db_path=db_path, index=index)
         hybrid_result = hybrid_retriever.retrieve(
@@ -185,24 +186,35 @@ def _retrieve_with_fallback(
             expand_neighbors=neighbors,
         )
     except Exception as exc:
-        print("Status: hybrid retrieval unavailable; falling back to lexical retrieval.", file=sys.stderr)
+        print(
+            "Status: hybrid retrieval unavailable; falling back to lexical retrieval.",
+            file=sys.stderr,
+        )
         lexical_result = index.retrieve(query, top_k=top_k, expand_neighbors=neighbors)
-        return lexical_result, {
-            "retrieval_mode": "lexical",
-            "fallback_reason": f"semantic_unavailable:{type(exc).__name__}",
-        }, None
+        return (
+            lexical_result,
+            {
+                "retrieval_mode": "lexical",
+                "fallback_reason": f"semantic_unavailable:{type(exc).__name__}",
+            },
+            None,
+        )
 
     retrieval_result = RetrievalResult(
         query=query,
         hits=hybrid_result.hits,
         neighbors=hybrid_result.neighbors,
     )
-    return retrieval_result, {
-        "retrieval_mode": "hybrid",
-        "lexical_hit_count": hybrid_result.lexical_hit_count,
-        "semantic_hit_count": hybrid_result.semantic_hit_count,
-        "notes": list(hybrid_result.retrieval_summary.get("notes", [])),
-    }, hybrid_result
+    return (
+        retrieval_result,
+        {
+            "retrieval_mode": "hybrid",
+            "lexical_hit_count": hybrid_result.lexical_hit_count,
+            "semantic_hit_count": hybrid_result.semantic_hit_count,
+            "notes": list(hybrid_result.retrieval_summary.get("notes", [])),
+        },
+        hybrid_result,
+    )
 
 
 def _print_no_results_hint(index: EvidenceUnitIndex) -> None:
@@ -224,9 +236,7 @@ def _print_retrieval_output(
     """Print retrieval output in either hybrid or lexical form."""
 
     if hybrid_result is not None:
-        _HybridRetriever, format_hybrid_retrieval_result_text, hybrid_retrieval_result_to_dict = (
-            _load_hybrid_support()
-        )
+        _HybridRetriever, format_hybrid_retrieval_result_text, hybrid_retrieval_result_to_dict = _load_hybrid_support()
         if as_json:
             print(json.dumps(hybrid_retrieval_result_to_dict(hybrid_result), ensure_ascii=False, indent=2))
             return
@@ -262,9 +272,12 @@ def run_query(
 
     if answer_mode:
         try:
-            GroundedAnswerClient, GroundedAnswerServiceError, format_grounded_answer_text, grounded_answer_to_dict = (
-                _load_grounded_answer_support()
-            )
+            (
+                GroundedAnswerClient,
+                GroundedAnswerServiceError,
+                format_grounded_answer_text,
+                grounded_answer_to_dict,
+            ) = _load_grounded_answer_support()
             answer_client = GroundedAnswerClient(db_path=db_path, index=index)
             try:
                 grounded_answer = answer_client.answer_from_retrieval_result(
@@ -277,9 +290,15 @@ def run_query(
             finally:
                 answer_client.close()
         except GroundedAnswerServiceError:
-            print("Status: answer synthesis unavailable; showing retrieved evidence instead.", file=sys.stderr)
+            print(
+                "Status: answer synthesis unavailable; showing retrieved evidence instead.",
+                file=sys.stderr,
+            )
         except Exception as exc:
-            print(f"Status: answer synthesis failed; showing retrieved evidence instead ({type(exc).__name__}).", file=sys.stderr)
+            print(
+                f"Status: answer synthesis failed; showing retrieved evidence instead ({type(exc).__name__}).",
+                file=sys.stderr,
+            )
         else:
             if as_json:
                 print(json.dumps(grounded_answer_to_dict(grounded_answer), ensure_ascii=False, indent=2))

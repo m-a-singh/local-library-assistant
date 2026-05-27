@@ -214,9 +214,7 @@ class EvidenceUnitIndex:
             self._conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_evidence_units_source_file ON evidence_units (source_file)"
             )
-            self._conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_evidence_units_type ON evidence_units (type)"
-            )
+            self._conn.execute("CREATE INDEX IF NOT EXISTS idx_evidence_units_type ON evidence_units (type)")
 
             try:
                 self._conn.execute(
@@ -354,10 +352,7 @@ class EvidenceUnitIndex:
             (fts_query, top_k),
         ).fetchall()
 
-        return [
-            (row["unit_id"], 1.0 / (1.0 + abs(float(row["raw_score"]))))
-            for row in rows
-        ]
+        return [(row["unit_id"], 1.0 / (1.0 + abs(float(row["raw_score"])))) for row in rows]
 
     def _search_with_like(self, query: str, top_k: int) -> list[tuple[str, float]]:
         """Fallback search using simple SQL substring scoring."""
@@ -386,9 +381,9 @@ class EvidenceUnitIndex:
 
         rows = self._conn.execute(
             f"""
-            SELECT unit_id, ({' + '.join(score_clauses)}) AS score
+            SELECT unit_id, ({" + ".join(score_clauses)}) AS score
             FROM evidence_units
-            WHERE {' OR '.join(where_clauses)}
+            WHERE {" OR ".join(where_clauses)}
             ORDER BY score DESC, unit_id ASC
             LIMIT ?
             """,

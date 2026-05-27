@@ -23,7 +23,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field, is_dataclass
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence
 
 
 class DataModelValidationError(ValueError):
@@ -599,18 +599,12 @@ class EvidenceUnit:
         for integrity_flag in self.integrity_flags:
             _require_non_empty(integrity_flag, "integrity_flags")
         if not any(link.recoverable and link.locator.has_position() for link in self.support_links):
-            raise DataModelValidationError(
-                "evidence units require at least one recoverable support locator"
-            )
+            raise DataModelValidationError("evidence units require at least one recoverable support locator")
         for support_link in self.support_links:
             if support_link.source_document_id != self.source_document_id:
-                raise DataModelValidationError(
-                    "support link source_document_id must match the evidence unit"
-                )
+                raise DataModelValidationError("support link source_document_id must match the evidence unit")
             if support_link.source_snapshot_id != self.source_snapshot_id:
-                raise DataModelValidationError(
-                    "support link source_snapshot_id must match the evidence unit"
-                )
+                raise DataModelValidationError("support link source_snapshot_id must match the evidence unit")
 
     @property
     def primary_locator(self) -> Optional[SourceLocator]:
@@ -749,13 +743,9 @@ class EvidenceGraph:
     def add_source_document(self, document: SourceDocument) -> None:
         existing = self._sources_by_snapshot.get(document.source_snapshot_id)
         if existing and existing != document:
-            raise DataModelValidationError(
-                f"duplicate source_snapshot_id: {document.source_snapshot_id}"
-            )
+            raise DataModelValidationError(f"duplicate source_snapshot_id: {document.source_snapshot_id}")
         self._sources_by_snapshot[document.source_snapshot_id] = document
-        self._source_ids_by_document.setdefault(document.source_document_id, set()).add(
-            document.source_snapshot_id
-        )
+        self._source_ids_by_document.setdefault(document.source_document_id, set()).add(document.source_snapshot_id)
 
     def add_extracted_text(self, extracted_text: ExtractedText) -> None:
         self._require_source(extracted_text.source_document_id, extracted_text.source_snapshot_id)
@@ -777,25 +767,21 @@ class EvidenceGraph:
         for region_id in evidence_unit.structural_region_ids:
             region = self._require_known(self._structural_regions, region_id, "structural_region_ids")
             if region.source_snapshot_id != evidence_unit.source_snapshot_id:
-                raise DataModelValidationError(
-                    "evidence units and structural regions must share source_snapshot_id"
-                )
+                raise DataModelValidationError("evidence units and structural regions must share source_snapshot_id")
         if evidence_unit.parent_evidence_unit_id is not None:
             self._require_known(
-                self._evidence_units, evidence_unit.parent_evidence_unit_id, "parent_evidence_unit_id"
+                self._evidence_units,
+                evidence_unit.parent_evidence_unit_id,
+                "parent_evidence_unit_id",
             )
         if evidence_unit.prev_evidence_unit_id is not None:
-            self._require_known(
-                self._evidence_units, evidence_unit.prev_evidence_unit_id, "prev_evidence_unit_id"
-            )
+            self._require_known(self._evidence_units, evidence_unit.prev_evidence_unit_id, "prev_evidence_unit_id")
         self._evidence_units[evidence_unit.evidence_unit_id] = evidence_unit
 
     def add_derived_artifact(self, artifact: DerivedArtifact) -> None:
         for source_document_id in artifact.source_scope.source_document_ids:
             if source_document_id not in self._source_ids_by_document:
-                raise DataModelValidationError(
-                    f"unknown source_document_id in source_scope: {source_document_id}"
-                )
+                raise DataModelValidationError(f"unknown source_document_id in source_scope: {source_document_id}")
         for source_snapshot_id in artifact.source_scope.source_snapshot_ids:
             self._require_known(self._sources_by_snapshot, source_snapshot_id, "source_snapshot_ids")
         for ref in artifact.derived_from:
@@ -807,9 +793,7 @@ class EvidenceGraph:
 
     def recover_evidence(self, evidence_unit_id: str) -> EvidenceRecovery:
         evidence_unit = self._require_known(self._evidence_units, evidence_unit_id, "evidence_unit_id")
-        source_document = self._require_source(
-            evidence_unit.source_document_id, evidence_unit.source_snapshot_id
-        )
+        source_document = self._require_source(evidence_unit.source_document_id, evidence_unit.source_snapshot_id)
         parent_regions = [
             self._require_known(self._structural_regions, region_id, "structural_region_ids")
             for region_id in evidence_unit.structural_region_ids
@@ -888,7 +872,11 @@ SHARED_TYPE_DEFINITIONS = [
             FieldDefinition("block", "string", "Carries layout or extractor block identity when available."),
             FieldDefinition("line_start", "integer", "Supports grounded citations into line-oriented sources."),
             FieldDefinition("line_end", "integer", "Closes line ranges for recovery and display."),
-            FieldDefinition("char_start", "integer", "Tracks character-level precision when extraction preserves it."),
+            FieldDefinition(
+                "char_start",
+                "integer",
+                "Tracks character-level precision when extraction preserves it.",
+            ),
             FieldDefinition("char_end", "integer", "Closes character ranges for exact source spans."),
             FieldDefinition("byte_start", "integer", "Supports binary or encoding-aware recoverability."),
             FieldDefinition("byte_end", "integer", "Closes byte ranges when byte offsets are available."),
@@ -925,14 +913,30 @@ SHARED_TYPE_DEFINITIONS = [
         name="AmbiguityMarker",
         purpose="Structured uncertainty model for extraction loss, mixed content, and disputed boundaries.",
         required_fields=[
-            FieldDefinition("ambiguity_type", "string", "Names the uncertainty class so downstream systems can reason about it."),
+            FieldDefinition(
+                "ambiguity_type",
+                "string",
+                "Names the uncertainty class so downstream systems can reason about it.",
+            ),
             FieldDefinition("reason", "string", "Preserves the human-readable explanation for the ambiguity."),
             FieldDefinition("severity", "AmbiguitySeverity", "Supports retrieval and explanation tradeoffs."),
-            FieldDefinition("resolver_status", "ResolverStatus", "Tracks whether the ambiguity has been addressed."),
+            FieldDefinition(
+                "resolver_status",
+                "ResolverStatus",
+                "Tracks whether the ambiguity has been addressed.",
+            ),
         ],
         optional_fields=[
-            FieldDefinition("affected_locator", "SourceLocator", "Narrows the ambiguity to a specific source area."),
-            FieldDefinition("alternatives", "AmbiguityAlternative[]", "Captures competing interpretations without collapsing them."),
+            FieldDefinition(
+                "affected_locator",
+                "SourceLocator",
+                "Narrows the ambiguity to a specific source area.",
+            ),
+            FieldDefinition(
+                "alternatives",
+                "AmbiguityAlternative[]",
+                "Captures competing interpretations without collapsing them.",
+            ),
         ],
     ),
 ]
@@ -948,9 +952,17 @@ MINIMAL_SCHEMA = SchemaProfile(
             purpose="Canonical identity and recovery anchor for an original local artifact snapshot.",
             required_fields=[
                 FieldDefinition("source_document_id", "string", "Keeps references stable across reprocessing."),
-                FieldDefinition("source_snapshot_id", "string", "Pins all downstream records to an exact version."),
+                FieldDefinition(
+                    "source_snapshot_id",
+                    "string",
+                    "Pins all downstream records to an exact version.",
+                ),
                 FieldDefinition("source_uri", "string", "Allows recovery of the original local source."),
-                FieldDefinition("source_kind", "string", "Routes source-specific parsing and segmentation behavior."),
+                FieldDefinition(
+                    "source_kind",
+                    "string",
+                    "Routes source-specific parsing and segmentation behavior.",
+                ),
                 FieldDefinition("mime_type", "string", "Preserves extractor routing metadata."),
                 FieldDefinition("content_hash", "string", "Supports integrity checks and deduplication."),
                 FieldDefinition("size_bytes", "integer", "Sanity-checks recovery and change detection."),
@@ -962,15 +974,39 @@ MINIMAL_SCHEMA = SchemaProfile(
             purpose="Text-bearing representation of one source snapshot with mapping back to source positions.",
             required_fields=[
                 FieldDefinition("extracted_text_id", "string", "Provides a stable handle for extraction output."),
-                FieldDefinition("source_document_id", "string", "Links the extraction back to the source identity."),
-                FieldDefinition("source_snapshot_id", "string", "Pins extraction output to a specific source version."),
-                FieldDefinition("extractor_name", "string", "Supports reproducibility across extraction pipelines."),
+                FieldDefinition(
+                    "source_document_id",
+                    "string",
+                    "Links the extraction back to the source identity.",
+                ),
+                FieldDefinition(
+                    "source_snapshot_id",
+                    "string",
+                    "Pins extraction output to a specific source version.",
+                ),
+                FieldDefinition(
+                    "extractor_name",
+                    "string",
+                    "Supports reproducibility across extraction pipelines.",
+                ),
                 FieldDefinition("extractor_version", "string", "Supports change-aware reprocessing."),
-                FieldDefinition("extraction_mode", "string", "Distinguishes parser, OCR, or hybrid text generation."),
+                FieldDefinition(
+                    "extraction_mode",
+                    "string",
+                    "Distinguishes parser, OCR, or hybrid text generation.",
+                ),
                 FieldDefinition("text", "string", "Carries the extracted text payload."),
                 FieldDefinition("text_hash", "string", "Supports integrity checks on extracted payload."),
-                FieldDefinition("span_map", "SpanMapEntry[]", "Preserves traceable mappings from extracted text into source spans."),
-                FieldDefinition("fidelity_state", "FidelityState", "Communicates whether extraction is exact, lossy, or partial."),
+                FieldDefinition(
+                    "span_map",
+                    "SpanMapEntry[]",
+                    "Preserves traceable mappings from extracted text into source spans.",
+                ),
+                FieldDefinition(
+                    "fidelity_state",
+                    "FidelityState",
+                    "Communicates whether extraction is exact, lossy, or partial.",
+                ),
             ],
             optional_fields=[],
         ),
@@ -985,11 +1021,19 @@ MINIMAL_SCHEMA = SchemaProfile(
                 FieldDefinition("region_type", "string", "Names the structural boundary semantics."),
                 FieldDefinition("primary_span", "AnchoredSpan", "Preserves exact or fallback source coverage."),
                 FieldDefinition("ordinal", "integer", "Maintains ordered traversal within a source."),
-                FieldDefinition("content_facets", "string[]", "Preserves modality mix such as prose, SQL, or shell."),
+                FieldDefinition(
+                    "content_facets",
+                    "string[]",
+                    "Preserves modality mix such as prose, SQL, or shell.",
+                ),
                 FieldDefinition("boundary_basis", "string", "Explains why this structural boundary exists."),
             ],
             optional_fields=[
-                FieldDefinition("parent_region_id", "string", "Supports hierarchy for nested sections or sessions."),
+                FieldDefinition(
+                    "parent_region_id",
+                    "string",
+                    "Supports hierarchy for nested sections or sessions.",
+                ),
                 FieldDefinition("prev_region_id", "string", "Supports left-context recovery."),
                 FieldDefinition("next_region_id", "string", "Supports right-context recovery."),
             ],
@@ -1001,21 +1045,45 @@ MINIMAL_SCHEMA = SchemaProfile(
                 FieldDefinition("evidence_unit_id", "string", "Provides the durable retrieval identity."),
                 FieldDefinition("source_document_id", "string", "Pins evidence to the stable source identity."),
                 FieldDefinition("source_snapshot_id", "string", "Pins evidence to the exact source version."),
-                FieldDefinition("unit_type", "string", "Expresses retrieval semantics such as section, event, or snippet."),
+                FieldDefinition(
+                    "unit_type",
+                    "string",
+                    "Expresses retrieval semantics such as section, event, or snippet.",
+                ),
                 FieldDefinition("canonical_text", "string", "Carries the retrieval and explanation payload."),
                 FieldDefinition("support_links", "ProvenanceLink[]", "Preserves exact source traceability."),
-                FieldDefinition("structural_region_ids", "string[]", "Anchors the unit inside structural context."),
+                FieldDefinition(
+                    "structural_region_ids",
+                    "string[]",
+                    "Anchors the unit inside structural context.",
+                ),
                 FieldDefinition("ordinal", "integer", "Supports ordered expansion and adjacency."),
                 FieldDefinition("boundary_rationale", "string", "Explains why the unit boundary is trustworthy."),
-                FieldDefinition("content_facets", "string[]", "Preserves modality for retrieval and explanation."),
-                FieldDefinition("trust_state", "TrustState", "Communicates whether the unit is segmented, verified, or ambiguous."),
+                FieldDefinition(
+                    "content_facets",
+                    "string[]",
+                    "Preserves modality for retrieval and explanation.",
+                ),
+                FieldDefinition(
+                    "trust_state",
+                    "TrustState",
+                    "Communicates whether the unit is segmented, verified, or ambiguous.",
+                ),
             ],
             optional_fields=[
-                FieldDefinition("parent_region_id", "string", "Preserves the enclosing structural anchor for recovery."),
+                FieldDefinition(
+                    "parent_region_id",
+                    "string",
+                    "Preserves the enclosing structural anchor for recovery.",
+                ),
                 FieldDefinition("parent_evidence_unit_id", "string", "Supports hierarchical evidence groupings."),
                 FieldDefinition("previous_unit_id", "string", "Supports grounded context expansion to the left."),
                 FieldDefinition("next_unit_id", "string", "Supports grounded context expansion to the right."),
-                FieldDefinition("confidence", "ConfidenceLevel", "Communicates coarse confidence without opaque scoring."),
+                FieldDefinition(
+                    "confidence",
+                    "ConfidenceLevel",
+                    "Communicates coarse confidence without opaque scoring.",
+                ),
                 FieldDefinition("flags", "string[]", "Carries simple boundary or mixed-content warnings."),
             ],
             invariants=[
@@ -1029,9 +1097,21 @@ MINIMAL_SCHEMA = SchemaProfile(
             required_fields=[
                 FieldDefinition("derived_artifact_id", "string", "Provides a stable artifact identity."),
                 FieldDefinition("artifact_type", "string", "Names the artifact family."),
-                FieldDefinition("artifact_schema_version", "string", "Supports artifact evolution without schema drift."),
-                FieldDefinition("source_scope", "SourceScope", "Declares which sources or snapshots the artifact covers."),
-                FieldDefinition("derived_from", "RecordRef[]", "Preserves traceability to evidence or structure."),
+                FieldDefinition(
+                    "artifact_schema_version",
+                    "string",
+                    "Supports artifact evolution without schema drift.",
+                ),
+                FieldDefinition(
+                    "source_scope",
+                    "SourceScope",
+                    "Declares which sources or snapshots the artifact covers.",
+                ),
+                FieldDefinition(
+                    "derived_from",
+                    "RecordRef[]",
+                    "Preserves traceability to evidence or structure.",
+                ),
                 FieldDefinition("payload", "object", "Carries the artifact's typed data."),
                 FieldDefinition("producer_name", "string", "Captures which component built the artifact."),
                 FieldDefinition("producer_version", "string", "Supports reproducibility and refresh logic."),
@@ -1056,15 +1136,27 @@ EXTENDED_SCHEMA = SchemaProfile(
             purpose="Canonical identity and recovery anchor for an original local artifact snapshot.",
             required_fields=MINIMAL_SCHEMA.entity_map()["SourceDocument"].required_fields,
             optional_fields=[
-                FieldDefinition("display_name", "string", "Gives humans a stable label for inspection and debugging."),
+                FieldDefinition(
+                    "display_name",
+                    "string",
+                    "Gives humans a stable label for inspection and debugging.",
+                ),
                 FieldDefinition("relative_path", "string", "Supports workspace-relative portability."),
                 FieldDefinition("encoding", "string", "Preserves source decoding assumptions."),
                 FieldDefinition("language_hint", "string", "Steers parsing for code or mixed-language inputs."),
                 FieldDefinition("created_at", "string", "Supports change-aware lifecycle tracking."),
                 FieldDefinition("modified_at", "string", "Supports change-aware lifecycle tracking."),
                 FieldDefinition("collector", "string", "Captures how the source entered the ingestion pipeline."),
-                FieldDefinition("content_facets", "string[]", "Carries early mixed-content hints into downstream stages."),
-                FieldDefinition("source_metadata", "object", "Retains format-specific metadata without flattening it."),
+                FieldDefinition(
+                    "content_facets",
+                    "string[]",
+                    "Carries early mixed-content hints into downstream stages.",
+                ),
+                FieldDefinition(
+                    "source_metadata",
+                    "object",
+                    "Retains format-specific metadata without flattening it.",
+                ),
             ],
         ),
         EntityDefinition(
@@ -1073,13 +1165,33 @@ EXTENDED_SCHEMA = SchemaProfile(
             required_fields=MINIMAL_SCHEMA.entity_map()["ExtractedText"].required_fields,
             optional_fields=[
                 FieldDefinition("line_index", "LineIndexEntry[]", "Supports fast line-oriented recovery."),
-                FieldDefinition("page_map", "PageMapEntry[]", "Preserves page-level navigation in extracted text."),
+                FieldDefinition(
+                    "page_map",
+                    "PageMapEntry[]",
+                    "Preserves page-level navigation in extracted text.",
+                ),
                 FieldDefinition("block_map", "BlockMapEntry[]", "Preserves layout or block boundaries."),
-                FieldDefinition("normalization_notes", "NormalizationNote[]", "Audits conservative normalization steps."),
-                FieldDefinition("language_spans", "LanguageSpan[]", "Preserves mixed-language or mixed-format spans."),
-                FieldDefinition("errors", "ExtractionError[]", "Retains extraction failures without hiding them."),
+                FieldDefinition(
+                    "normalization_notes",
+                    "NormalizationNote[]",
+                    "Audits conservative normalization steps.",
+                ),
+                FieldDefinition(
+                    "language_spans",
+                    "LanguageSpan[]",
+                    "Preserves mixed-language or mixed-format spans.",
+                ),
+                FieldDefinition(
+                    "errors",
+                    "ExtractionError[]",
+                    "Retains extraction failures without hiding them.",
+                ),
                 FieldDefinition("ambiguity", "AmbiguityMarker[]", "Preserves unresolved extraction uncertainty."),
-                FieldDefinition("content_facets", "string[]", "Carries modality hints forward into segmentation."),
+                FieldDefinition(
+                    "content_facets",
+                    "string[]",
+                    "Carries modality hints forward into segmentation.",
+                ),
             ],
         ),
         EntityDefinition(
@@ -1087,13 +1199,29 @@ EXTENDED_SCHEMA = SchemaProfile(
             purpose="Source-preserving structural span such as a section, log event, or code block.",
             required_fields=MINIMAL_SCHEMA.entity_map()["StructuralRegion"].required_fields,
             optional_fields=[
-                FieldDefinition("parent_region_id", "string", "Supports hierarchy for nested sections or sessions."),
+                FieldDefinition(
+                    "parent_region_id",
+                    "string",
+                    "Supports hierarchy for nested sections or sessions.",
+                ),
                 FieldDefinition("prev_region_id", "string", "Supports left-context recovery."),
                 FieldDefinition("next_region_id", "string", "Supports right-context recovery."),
-                FieldDefinition("label", "string", "Carries a concise structural label such as a heading or symbol name."),
+                FieldDefinition(
+                    "label",
+                    "string",
+                    "Carries a concise structural label such as a heading or symbol name.",
+                ),
                 FieldDefinition("heading_path", "string[]", "Preserves enclosing section context."),
-                FieldDefinition("supporting_spans", "AnchoredSpan[]", "Allows faithful multi-span structure when explicitly related."),
-                FieldDefinition("ambiguity", "AmbiguityMarker[]", "Captures structural uncertainty without flattening it."),
+                FieldDefinition(
+                    "supporting_spans",
+                    "AnchoredSpan[]",
+                    "Allows faithful multi-span structure when explicitly related.",
+                ),
+                FieldDefinition(
+                    "ambiguity",
+                    "AmbiguityMarker[]",
+                    "Captures structural uncertainty without flattening it.",
+                ),
                 FieldDefinition("quality_flags", "string[]", "Supports downstream ranking and inspection."),
                 FieldDefinition("children_count", "integer", "Supports hierarchy-aware traversal."),
             ],
@@ -1103,19 +1231,43 @@ EXTENDED_SCHEMA = SchemaProfile(
             purpose="Smallest retrieval-ready and explanation-ready source-faithful support object.",
             required_fields=MINIMAL_SCHEMA.entity_map()["EvidenceUnit"].required_fields,
             optional_fields=[
-                FieldDefinition("parent_region_id", "string", "Preserves the enclosing structural anchor for recovery."),
+                FieldDefinition(
+                    "parent_region_id",
+                    "string",
+                    "Preserves the enclosing structural anchor for recovery.",
+                ),
                 FieldDefinition("parent_evidence_unit_id", "string", "Supports hierarchical evidence groupings."),
                 FieldDefinition("previous_unit_id", "string", "Supports grounded context expansion to the left."),
                 FieldDefinition("next_unit_id", "string", "Supports grounded context expansion to the right."),
-                FieldDefinition("confidence", "ConfidenceLevel", "Communicates coarse confidence without opaque scoring."),
+                FieldDefinition(
+                    "confidence",
+                    "ConfidenceLevel",
+                    "Communicates coarse confidence without opaque scoring.",
+                ),
                 FieldDefinition("flags", "string[]", "Carries simple boundary or mixed-content warnings."),
-                FieldDefinition("context_labels", "string[]", "Carries heading, symbol, or session context into retrieval."),
-                FieldDefinition("ambiguity", "AmbiguityMarker[]", "Preserves support uncertainty for explanation."),
-                FieldDefinition("integrity_flags", "string[]", "Captures content warnings such as truncation or overlap."),
+                FieldDefinition(
+                    "context_labels",
+                    "string[]",
+                    "Carries heading, symbol, or session context into retrieval.",
+                ),
+                FieldDefinition(
+                    "ambiguity",
+                    "AmbiguityMarker[]",
+                    "Preserves support uncertainty for explanation.",
+                ),
+                FieldDefinition(
+                    "integrity_flags",
+                    "string[]",
+                    "Captures content warnings such as truncation or overlap.",
+                ),
                 FieldDefinition("keywords", "string[]", "Supports lexical retrieval and diagnostics."),
                 FieldDefinition("entity_refs", "EntityRef[]", "Supports grounded entity-aware retrieval."),
                 FieldDefinition("conflict_refs", "RecordRef[]", "Links contradictory or competing evidence."),
-                FieldDefinition("expansion_policy_hint", "string", "Guides how grounded explanation should expand context."),
+                FieldDefinition(
+                    "expansion_policy_hint",
+                    "string",
+                    "Guides how grounded explanation should expand context.",
+                ),
             ],
             invariants=MINIMAL_SCHEMA.entity_map()["EvidenceUnit"].invariants,
         ),
@@ -1124,8 +1276,16 @@ EXTENDED_SCHEMA = SchemaProfile(
             purpose="Typed secondary view such as a command, query, or link index derived from evidence.",
             required_fields=MINIMAL_SCHEMA.entity_map()["DerivedArtifact"].required_fields,
             optional_fields=[
-                FieldDefinition("target_refs", "ArtifactTarget[]", "Preserves extracted commands, links, or queries with upstream support."),
-                FieldDefinition("ambiguity", "AmbiguityMarker[]", "Carries unresolved ambiguity into derived views."),
+                FieldDefinition(
+                    "target_refs",
+                    "ArtifactTarget[]",
+                    "Preserves extracted commands, links, or queries with upstream support.",
+                ),
+                FieldDefinition(
+                    "ambiguity",
+                    "AmbiguityMarker[]",
+                    "Carries unresolved ambiguity into derived views.",
+                ),
                 FieldDefinition("confidence", "float", "Supports ranking without replacing typed ambiguity."),
                 FieldDefinition("refresh_state", "string", "Supports incremental rebuild workflows."),
                 FieldDefinition("notes", "string", "Preserves operator-facing artifact notes."),

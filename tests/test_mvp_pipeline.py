@@ -124,7 +124,10 @@ class MvpPipelineTest(unittest.TestCase):
             self.assertEqual(result.evidence_units[0].canonical_text, "alpha\nbeta\n")
             self.assertEqual((result.evidence_units[0].line_start, result.evidence_units[0].line_end), (1, 2))
             self.assertEqual((result.evidence_units[0].char_start, result.evidence_units[0].char_end), (0, 11))
-            self.assertEqual((result.evidence_units[0].text_span.start, result.evidence_units[0].text_span.end), (0, 11))
+            self.assertEqual(
+                (result.evidence_units[0].text_span.start, result.evidence_units[0].text_span.end),
+                (0, 11),
+            )
             self.assertIsNone(result.evidence_units[0].previous_unit_id)
             self.assertEqual(result.evidence_units[0].next_unit_id, result.evidence_units[1].evidence_unit_id)
             self.assertEqual(result.evidence_units[1].previous_unit_id, result.evidence_units[0].evidence_unit_id)
@@ -135,7 +138,10 @@ class MvpPipelineTest(unittest.TestCase):
             )
             self.assertEqual(result.evidence_units[0].confidence.value, "medium")
             self.assertEqual(result.evidence_units[0].flags, [])
-            self.assertEqual(result.evidence_units[0].signals, ["has_paragraph_body", "single_region_unit", "unit_type:prose"])
+            self.assertEqual(
+                result.evidence_units[0].signals,
+                ["has_paragraph_body", "single_region_unit", "unit_type:prose"],
+            )
 
     def test_pipeline_result_can_expand_evidence_context_via_adjacency(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -163,20 +169,24 @@ class MvpPipelineTest(unittest.TestCase):
             path.write_text("# Top\nIntro\n\n## Child\nMore\n", encoding="utf-8")
 
             result = run_pipeline(path)
-            section_regions = [
-                region for region in result.structural_regions if region.region_type == "section_anchor"
-            ]
+            section_regions = [region for region in result.structural_regions if region.region_type == "section_anchor"]
             self.assertEqual(len(section_regions), 2)
             self.assertEqual(section_regions[0].label, "Top")
             self.assertEqual(section_regions[1].label, "Child")
             self.assertEqual(section_regions[1].parent_region_id, section_regions[0].structural_region_id)
             self.assertEqual(len(result.evidence_units), 2)
-            self.assertEqual([unit.unit_type for unit in result.evidence_units], ["heading_section", "heading_section"])
+            self.assertEqual(
+                [unit.unit_type for unit in result.evidence_units],
+                ["heading_section", "heading_section"],
+            )
             self.assertEqual(result.evidence_units[0].canonical_text, "# Top\nIntro\n")
             self.assertEqual(result.evidence_units[1].canonical_text, "## Child\nMore\n")
             self.assertEqual(result.evidence_units[0].context_labels, ["Top"])
             self.assertEqual(result.evidence_units[1].context_labels, ["Top", "Child"])
-            self.assertEqual(result.evidence_units[0].parent_region_id, result.structural_regions[0].structural_region_id)
+            self.assertEqual(
+                result.evidence_units[0].parent_region_id,
+                result.structural_regions[0].structural_region_id,
+            )
             self.assertEqual(result.evidence_units[1].parent_region_id, section_regions[0].structural_region_id)
             self.assertIn("has_heading", result.evidence_units[0].signals)
             self.assertIn("multi_region_unit", result.evidence_units[0].signals)
@@ -187,12 +197,8 @@ class MvpPipelineTest(unittest.TestCase):
             path.write_text("# Title\n```python\nprint('x')\n```\nAfter\n", encoding="utf-8")
 
             result = run_pipeline(path)
-            code_regions = [
-                region for region in result.structural_regions if region.region_type == "fenced_code_block"
-            ]
-            code_evidence = [
-                unit for unit in result.evidence_units if unit.unit_type == "code"
-            ]
+            code_regions = [region for region in result.structural_regions if region.region_type == "fenced_code_block"]
+            code_evidence = [unit for unit in result.evidence_units if unit.unit_type == "code"]
 
             self.assertEqual(len(code_regions), 1)
             self.assertEqual(len(code_evidence), 1)
@@ -209,9 +215,7 @@ class MvpPipelineTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "table.md"
             path.write_text(
-                "| Name | Value |\n"
-                "| --- | --- |\n"
-                "| alpha | beta |\n",
+                "| Name | Value |\n| --- | --- |\n| alpha | beta |\n",
                 encoding="utf-8",
             )
 
@@ -228,10 +232,7 @@ class MvpPipelineTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "diagram.md"
             path.write_text(
-                "```mermaid\n"
-                "graph TD\n"
-                "A-->B\n"
-                "```\n",
+                "```mermaid\ngraph TD\nA-->B\n```\n",
                 encoding="utf-8",
             )
 
@@ -248,10 +249,7 @@ class MvpPipelineTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "search.md"
             path.write_text(
-                "GET my-index/_search\n"
-                "{\n"
-                "  \"query\": {\"match_all\": {}}\n"
-                "}\n",
+                'GET my-index/_search\n{\n  "query": {"match_all": {}}\n}\n',
                 encoding="utf-8",
             )
 
@@ -268,10 +266,7 @@ class MvpPipelineTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "aliases.md"
             path.write_text(
-                "POST /_aliases\n"
-                "{\n"
-                "  \"actions\": []\n"
-                "}\n",
+                'POST /_aliases\n{\n  "actions": []\n}\n',
                 encoding="utf-8",
             )
 
@@ -385,7 +380,10 @@ class MvpPipelineTest(unittest.TestCase):
             self.assertEqual(command_unit.flags, ["mixed_content", "weak_boundary"])
             self.assertEqual(command_unit.line_start, 1)
             self.assertEqual(command_unit.canonical_text, "Run this command:\n\n$ ls -la\npwd\n")
-            self.assertEqual([link.role for link in command_unit.support_links], ["primary_support", "attached_context"])
+            self.assertEqual(
+                [link.role for link in command_unit.support_links],
+                ["primary_support", "attached_context"],
+            )
             self.assertEqual(command_unit.support_links[1].locator.line_start, 1)
             self.assertEqual(command_unit.support_links[1].locator.line_end, 1)
 
@@ -494,7 +492,10 @@ class MvpPipelineTest(unittest.TestCase):
             result = run_pipeline(path)
 
             self.assertEqual(len(result.evidence_units), 4)
-            self.assertEqual([unit.unit_type for unit in result.evidence_units], ["command", "command", "command", "command"])
+            self.assertEqual(
+                [unit.unit_type for unit in result.evidence_units],
+                ["command", "command", "command", "command"],
+            )
             self.assertEqual(
                 [unit.canonical_text for unit in result.evidence_units],
                 [
@@ -513,10 +514,9 @@ class MvpPipelineTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "payload.txt"
             path.write_text(
-                "PAYLOAD='{\"name\":\"demo\",\"items\":["
-                + "\"x\","
-                * 120
-                + "\"z\"]}' aws lambda invoke --payload \"$PAYLOAD\" out.json\n",
+                'PAYLOAD=\'{"name":"demo","items":['
+                + '"x",' * 120
+                + '"z"]}\' aws lambda invoke --payload "$PAYLOAD" out.json\n',
                 encoding="utf-8",
             )
 
@@ -543,7 +543,10 @@ class MvpPipelineTest(unittest.TestCase):
             self.assertEqual(normalized.text, "alpha\n\nbeta\n")
             self.assertEqual(normalized.fidelity_state, FidelityState.NORMALIZED)
             self.assertEqual(normalized.source_snapshot_id, source_document.source_snapshot_id)
-            self.assertEqual([note.note_type for note in normalized.normalization_notes], ["bom_removed", "newline_normalized"])
+            self.assertEqual(
+                [note.note_type for note in normalized.normalization_notes],
+                ["bom_removed", "newline_normalized"],
+            )
             self.assertNotIn("\r", segmentation_input.text)
             self.assertFalse(segmentation_input.text.startswith("\ufeff"))
             self.assertEqual([line.line_number for line in segmentation_input.lines], [1, 2, 3])
@@ -646,9 +649,7 @@ class MvpPipelineTest(unittest.TestCase):
             path.write_text("# Broken\n```python\nprint(1)\n", encoding="utf-8")
 
             result = run_pipeline(path)
-            code_regions = [
-                region for region in result.structural_regions if region.region_type == "fenced_code_block"
-            ]
+            code_regions = [region for region in result.structural_regions if region.region_type == "fenced_code_block"]
             self.assertEqual(len(code_regions), 1)
             self.assertEqual(len(code_regions[0].ambiguity), 1)
             self.assertEqual(code_regions[0].ambiguity[0].ambiguity_type, "unclosed_fenced_code_block")

@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from query_retriever import EvidenceUnit, RetrievalHit, RetrievalResult
+from query_retriever import RetrievalHit, RetrievalResult
 
 LOGGER = logging.getLogger(__name__)
 if not LOGGER.handlers:
@@ -20,9 +20,7 @@ if not LOGGER.handlers:
     formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
     handler.setFormatter(formatter)
     LOGGER.addHandler(handler)
-LOGGER.setLevel(
-    logging.DEBUG if os.getenv("CANDIDATE_RERANKER_DEBUG") else logging.INFO
-)
+LOGGER.setLevel(logging.DEBUG if os.getenv("CANDIDATE_RERANKER_DEBUG") else logging.INFO)
 
 
 @dataclass
@@ -45,9 +43,7 @@ class RerankResult:
 @dataclass
 class CandidateRerankerConfig:
     api_base: str = "http://localhost:4000"
-    api_key: str = field(
-        default_factory=lambda: os.getenv("LITELLM_PROXY_API_KEY", "local-dev-key")
-    )
+    api_key: str = field(default_factory=lambda: os.getenv("LITELLM_PROXY_API_KEY", "local-dev-key"))
     # Model id/tag for the upstream chat-completions provider (LiteLLM/Ollama/etc).
     # Set via env var to avoid leaking internal model naming conventions.
     model: str = field(default_factory=lambda: os.getenv("LLA_RERANK_MODEL", "llama3:8b"))
@@ -105,12 +101,8 @@ class CandidateReranker:
     ) -> RerankResult:
         """Rerank retrieved candidates and return a shortlisted ordering."""
 
-        candidate_limit = (
-            max_candidates if max_candidates is not None else self.config.max_candidates
-        )
-        selected_limit = (
-            shortlist_k if shortlist_k is not None else self.config.shortlist_size
-        )
+        candidate_limit = max_candidates if max_candidates is not None else self.config.max_candidates
+        selected_limit = shortlist_k if shortlist_k is not None else self.config.shortlist_size
 
         candidates = retrieval_result.hits[: max(0, candidate_limit)]
         if not candidates:
@@ -137,9 +129,7 @@ class CandidateReranker:
 
         notes: list[str] = []
         try:
-            raw_response = self._generate_rerank_output(
-                query, candidates, selected_limit
-            )
+            raw_response = self._generate_rerank_output(query, candidates, selected_limit)
             rerank_result = self._parse_rerank_response(
                 query=query,
                 raw_text=raw_response,
@@ -335,9 +325,7 @@ class CandidateReranker:
             "line_end": line_end,
             "lines": line_range,
             "confidence": str(confidence).strip() if confidence else "unknown",
-            "flags": ", ".join(str(flag) for flag in flags)
-            if isinstance(flags, list) and flags
-            else "none",
+            "flags": ", ".join(str(flag) for flag in flags) if isinstance(flags, list) and flags else "none",
             "text_excerpt": excerpt,
         }
 
@@ -376,9 +364,7 @@ class CandidateReranker:
                     },
                     method="POST",
                 )
-                with urllib.request.urlopen(
-                    request, timeout=self.config.timeout_seconds
-                ) as response:
+                with urllib.request.urlopen(request, timeout=self.config.timeout_seconds) as response:
                     raw_response = response.read().decode("utf-8")
                 parsed_response = json.loads(raw_response)
                 choices = parsed_response.get("choices", [])
@@ -387,9 +373,7 @@ class CandidateReranker:
                 message = choices[0].get("message", {})
                 content = message.get("content")
                 if not isinstance(content, str):
-                    raise RuntimeError(
-                        "rerank response did not include message content"
-                    )
+                    raise RuntimeError("rerank response did not include message content")
                 if not content.strip():
                     raise RuntimeError("rerank response returned empty content")
                 return content
@@ -403,9 +387,7 @@ class CandidateReranker:
                 time.sleep(self.config.retry_backoff_seconds * attempt)
                 continue
 
-            raise RuntimeError(
-                f"rerank service failure: {type(last_exc).__name__}: {last_exc}"
-            ) from last_exc
+            raise RuntimeError(f"rerank service failure: {type(last_exc).__name__}: {last_exc}") from last_exc
         raise RuntimeError("rerank service failure: unknown")
 
     def _chat_completions_url(self) -> str:

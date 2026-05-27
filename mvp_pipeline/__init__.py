@@ -1,6 +1,11 @@
 """Thin MVP evidence pipeline for local `.txt` and `.md` files."""
 
-from .derived_artifacts import build_command_index, build_derived_artifacts, build_link_index, build_query_index
+from .derived_artifacts import (
+    build_command_index,
+    build_derived_artifacts,
+    build_link_index,
+    build_query_index,
+)
 from .evidence import build_evidence_units
 from .export_markdown import (
     BatchMarkdownExportResult,
@@ -13,8 +18,19 @@ from .export_markdown import (
     export_pipeline_results_to_markdown,
 )
 from .ingest import ingest_local_file
-from .normalize import SegmentationInput, SegmentationLine, build_segmentation_input, normalize_extracted_text
-from .pipeline import DEFAULT_EVIDENCE_DB_PATH, PipelineResult, run_folder_pipeline, run_pipeline, run_structural_segmentation
+from .normalize import (
+    SegmentationInput,
+    SegmentationLine,
+    build_segmentation_input,
+    normalize_extracted_text,
+)
+from .pipeline import (
+    DEFAULT_EVIDENCE_DB_PATH,
+    PipelineResult,
+    run_folder_pipeline,
+    run_pipeline,
+    run_structural_segmentation,
+)
 from .segment import SegmentationProfile, build_structural_regions, select_segmentation_profile
 
 __all__ = [

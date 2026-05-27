@@ -54,27 +54,14 @@ def main() -> int:
         print(f"  parent_region_id: {evidence_unit.parent_region_id or 'None'}")
         print(f"  previous_unit_id: {evidence_unit.previous_unit_id or 'None'}")
         print(f"  next_unit_id: {evidence_unit.next_unit_id or 'None'}")
+        print(f"  parent_structural_anchor: {parent_anchor.structural_region_id if parent_anchor else 'None'}")
         print(
-            "  parent_structural_anchor: "
-            f"{parent_anchor.structural_region_id if parent_anchor else 'None'}"
-        )
-        print(
-            "  context_labels: "
-            f"{', '.join(evidence_unit.context_labels) if evidence_unit.context_labels else 'None'}"
+            f"  context_labels: {', '.join(evidence_unit.context_labels) if evidence_unit.context_labels else 'None'}"
         )
         print(f"  confidence: {evidence_unit.confidence.value}")
-        print(
-            "  flags: "
-            f"{', '.join(evidence_unit.flags) if evidence_unit.flags else 'None'}"
-        )
-        print(
-            "  signals: "
-            f"{', '.join(evidence_unit.signals) if evidence_unit.signals else 'None'}"
-        )
-        print(
-            "  support_roles: "
-            f"{', '.join(link.role for link in evidence_unit.support_links)}"
-        )
+        print(f"  flags: {', '.join(evidence_unit.flags) if evidence_unit.flags else 'None'}")
+        print(f"  signals: {', '.join(evidence_unit.signals) if evidence_unit.signals else 'None'}")
+        print(f"  support_roles: {', '.join(link.role for link in evidence_unit.support_links)}")
         print("  canonical_text:")
         print(textwrap.indent(evidence_unit.canonical_text, "    "))
         print()
@@ -85,12 +72,7 @@ def main() -> int:
         neighbors = result.get_neighbors(target_unit, 1)
         expanded = result.expand_context(target_unit, 1)
         print(f"Neighbors around {target_unit.evidence_unit_id}:")
-        print(
-            "  "
-            + ", ".join(neighbor.evidence_unit_id for neighbor in neighbors)
-            if neighbors
-            else "  None"
-        )
+        print("  " + ", ".join(neighbor.evidence_unit_id for neighbor in neighbors) if neighbors else "  None")
         print(f"Expanded context for {target_unit.evidence_unit_id}:")
         print("  " + ", ".join(unit.evidence_unit_id for unit in expanded))
 

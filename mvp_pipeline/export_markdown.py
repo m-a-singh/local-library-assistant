@@ -37,14 +37,8 @@ EXPORT_INTROS = {
         "This includes prose, heading sections, code, and any other remaining units. "
         "Canonical pipeline objects remain the source of truth."
     ),
-    "commands": (
-        "Audit view for command-like evidence units. "
-        "Canonical pipeline objects remain the source of truth."
-    ),
-    "sql": (
-        "Audit view for SQL-like evidence units. "
-        "Canonical pipeline objects remain the source of truth."
-    ),
+    "commands": ("Audit view for command-like evidence units. Canonical pipeline objects remain the source of truth."),
+    "sql": ("Audit view for SQL-like evidence units. Canonical pipeline objects remain the source of truth."),
     "links": (
         "Cross-cut audit view for evidence units that contain link targets. "
         "Items may also appear in other files. Canonical pipeline objects remain the source of truth."
