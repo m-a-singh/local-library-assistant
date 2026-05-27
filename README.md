@@ -72,24 +72,24 @@ local file -> ExtractedText -> StructuralRegion -> EvidenceUnit -> SQLite index 
 
 ```mermaid
 graph TD
-  A[Local files (.md/.txt/.pdf/.docx/etc)]:::accent0 --> B[Ingest + normalize\n(mvp_pipeline/ingest.py, normalize.py)]:::accent1
-  B --> C[Segmentation contract\n(SegmentationInput)]:::accent2
-  C --> D[Structural segmentation\n(mvp_pipeline/segment.py)]:::accent3
-  D --> E[StructuralRegion list]:::accent2
-  E --> F[Evidence shaping + type detection\n(mvp_pipeline/evidence.py)]:::accent4
-  F --> G[EvidenceUnit list]:::accent2
-  G --> H[SQLite EvidenceUnit index\n(query_retriever.py)]:::accent5
+  A[Local files]:::accent0 --> B[Ingest + normalize]:::accent1
+  B --> C[Segmentation contract]:::accent2
+  C --> D[Structural segmentation]:::accent3
+  D --> E[Structural regions]:::accent2
+  E --> F[Evidence shaping + type detection]:::accent4
+  F --> G[Evidence units]:::accent2
+  G --> H[SQLite evidence index]:::accent5
 
-  H --> I[Lexical retrieval\n(chat.py)]:::accent6
-  H -. optional .-> J[Hybrid retrieval\n(hybrid_retriever.py)]:::accent6
+  H --> I[Lexical retrieval]:::accent6
+  H -. optional .-> J[Hybrid retrieval]:::accent6
 
-  I --> K[Evidence hits + neighbors]:::accent2
+  I --> K[Hits + neighbors]:::accent2
   J --> K
 
-  K -. optional .-> L[Grounded answer synthesis\n(grounded_answer_client.py)]:::accent7
+  K -. optional .-> L[Grounded answer synthesis]:::accent7
   L --> M[Answer + citations]:::accent7
 
-  K --> N[Retrieval-only output\n(hits shown to user)]:::accent6
+  K --> N[Retrieval-only output]:::accent6
 ```
 
 ### 1. Ingestion and normalization
